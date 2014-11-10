@@ -387,17 +387,18 @@
 
 // 全削除ポップアップのボタン選択時の動作
 - (void)ADalertView:(UIAlertView *)ADalertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    if (buttonIndex == 1) {
-        
-        NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
-        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
-        
-        NSLog(@"%@", _LabelArray);
-    }
-    else{
-        return;
-    }
+//    if (buttonIndex == 1) {
+//        
+//        NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
+//        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
+//        NSLog(@"%@", _LabelArray);
+//    }
+//    else{
+//        return;
+//    }
 }
+
+// ユーザデフォルトに保存
 - (void)saveToUserDefaults{
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -406,6 +407,7 @@
     [userDefaults synchronize];
 }
 
+// ユーザデフォルトから読み出し
 - (void)loadFromUserdefaults{
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
