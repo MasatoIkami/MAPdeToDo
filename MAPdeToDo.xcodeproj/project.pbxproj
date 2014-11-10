@@ -14,6 +14,9 @@
 		CE56B1081A089B6000766BB8 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE56B1071A089B6000766BB8 /* Images.xcassets */; };
 		CE56B10B1A089B6000766BB8 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = CE56B1091A089B6000766BB8 /* LaunchScreen.xib */; };
 		CE56B1171A089B6000766BB8 /* MAPdeToDoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CE56B1161A089B6000766BB8 /* MAPdeToDoTests.m */; };
+		CE56B1531A08BF4700766BB8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE56B1521A08BF4700766BB8 /* QuartzCore.framework */; };
+		CE84B0421A0A033D000C7607 /* trash.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CE84B0411A0A033D000C7607 /* trash.jpg */; };
+		CE84B0471A0A14C4000C7607 /* l03.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CE84B0461A0A14C4000C7607 /* l03.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +43,9 @@
 		CE56B1101A089B6000766BB8 /* MAPdeToDoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MAPdeToDoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE56B1151A089B6000766BB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE56B1161A089B6000766BB8 /* MAPdeToDoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MAPdeToDoTests.m; sourceTree = "<group>"; };
+		CE56B1521A08BF4700766BB8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		CE84B0411A0A033D000C7607 /* trash.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = trash.jpg; sourceTree = "<group>"; };
+		CE84B0461A0A14C4000C7607 /* l03.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = l03.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE56B1531A08BF4700766BB8 /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +70,7 @@
 		CE56B0EE1A089B5F00766BB8 = {
 			isa = PBXGroup;
 			children = (
+				CE56B1521A08BF4700766BB8 /* QuartzCore.framework */,
 				CE56B0F91A089B6000766BB8 /* MAPdeToDo */,
 				CE56B1131A089B6000766BB8 /* MAPdeToDoTests */,
 				CE56B0F81A089B6000766BB8 /* Products */,
@@ -96,6 +104,7 @@
 		CE56B0FA1A089B6000766BB8 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				CE84B0401A0A033D000C7607 /* images */,
 				CE56B0FB1A089B6000766BB8 /* Info.plist */,
 				CE56B0FC1A089B6000766BB8 /* main.m */,
 			);
@@ -117,6 +126,15 @@
 				CE56B1151A089B6000766BB8 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CE84B0401A0A033D000C7607 /* images */ = {
+			isa = PBXGroup;
+			children = (
+				CE84B0461A0A14C4000C7607 /* l03.jpg */,
+				CE84B0411A0A033D000C7607 /* trash.jpg */,
+			);
+			path = images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -201,6 +219,8 @@
 			files = (
 				CE56B1061A089B6000766BB8 /* Main.storyboard in Resources */,
 				CE56B10B1A089B6000766BB8 /* LaunchScreen.xib in Resources */,
+				CE84B0471A0A14C4000C7607 /* l03.jpg in Resources */,
+				CE84B0421A0A033D000C7607 /* trash.jpg in Resources */,
 				CE56B1081A089B6000766BB8 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -297,7 +317,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -332,7 +352,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -343,7 +363,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = MAPdeToDo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -353,7 +375,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = MAPdeToDo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -412,6 +436,7 @@
 				CE56B11C1A089B6000766BB8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		CE56B11D1A089B6000766BB8 /* Build configuration list for PBXNativeTarget "MAPdeToDoTests" */ = {
 			isa = XCConfigurationList;
@@ -420,6 +445,7 @@
 				CE56B11F1A089B6000766BB8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

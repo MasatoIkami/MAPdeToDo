@@ -7,9 +7,22 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <UITextFieldDelegate, UIGestureRecognizerDelegate>{
+    
+    UIView *_backView;
+    UIButton *_returnBtn;
+    UIButton *_decideBtn;
+    UITextField *_ListTField;
+    
+    NSMutableArray *_LabelArray;
+    
+    UILabel *_NewLabel;
+    
+}
 
+@property (nonatomic, strong) UITapGestureRecognizer *singleTap;
 
 @end
 
