@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE2B08DA1A13344C0090FF1E /* BlackStroke.m in Sources */ = {isa = PBXBuildFile; fileRef = CE2B08D91A13344C0090FF1E /* BlackStroke.m */; };
 		CE56B0FD1A089B6000766BB8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CE56B0FC1A089B6000766BB8 /* main.m */; };
 		CE56B1001A089B6000766BB8 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CE56B0FF1A089B6000766BB8 /* AppDelegate.m */; };
 		CE56B1031A089B6000766BB8 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE56B1021A089B6000766BB8 /* ViewController.m */; };
@@ -30,6 +31,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CE2B08D81A13344C0090FF1E /* BlackStroke.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlackStroke.h; sourceTree = "<group>"; };
+		CE2B08D91A13344C0090FF1E /* BlackStroke.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlackStroke.m; sourceTree = "<group>"; };
 		CE56B0F71A089B6000766BB8 /* MAPdeToDo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAPdeToDo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE56B0FB1A089B6000766BB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE56B0FC1A089B6000766BB8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -93,6 +96,8 @@
 				CE56B0FF1A089B6000766BB8 /* AppDelegate.m */,
 				CE56B1011A089B6000766BB8 /* ViewController.h */,
 				CE56B1021A089B6000766BB8 /* ViewController.m */,
+				CE2B08D81A13344C0090FF1E /* BlackStroke.h */,
+				CE2B08D91A13344C0090FF1E /* BlackStroke.m */,
 				CE56B1041A089B6000766BB8 /* Main.storyboard */,
 				CE56B1071A089B6000766BB8 /* Images.xcassets */,
 				CE56B1091A089B6000766BB8 /* LaunchScreen.xib */,
@@ -240,6 +245,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE56B1031A089B6000766BB8 /* ViewController.m in Sources */,
+				CE2B08DA1A13344C0090FF1E /* BlackStroke.m in Sources */,
 				CE56B1001A089B6000766BB8 /* AppDelegate.m in Sources */,
 				CE56B0FD1A089B6000766BB8 /* main.m in Sources */,
 			);

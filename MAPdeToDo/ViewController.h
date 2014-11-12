@@ -20,6 +20,8 @@
     
     UILabel *_NewLabel;
     
+    
+    NSString *t;
 }
 
 @property (nonatomic, strong) UITapGestureRecognizer *singleTap;

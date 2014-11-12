@@ -7,11 +7,9 @@
 //
 
 #import "ViewController.h"
+#import "BlackStroke.h"
 
-@interface ViewController (){
-    
-}
-
+@interface ViewController ()
 
 @end
 
@@ -19,14 +17,19 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BlackStroke *bs = [[BlackStroke alloc] initWithFrame:self.view.bounds];
+    [self.view addSubview:bs];
 
-    [self createMainLabel];
+    [self createMainLabel]; // MAPdeToDoと表示
+    [self createNewButton]; // ラベル作成ボタン
+    [self createDeleteImage]; // ゴミ箱
+    [self createSettingButton]; // 設定
+    [self createallDeleteBtn]; // 全削除ボタン
     
-    [self createNewButton];
-    [self createDeleteImage];
-    [self createSettingButton];
-    [self createallDeleteBtn];
-    [self createbackView];
+    [self createbackView]; // バックビューを下に表示
+    
+    [self loadFromUserdefaults]; // データを読み出す
+    NSLog(@"%@", _LabelArray);
     
     //ビューの初期化時にジェスチャをself.viewに登録
     self.singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onSingleTap:)];
@@ -34,15 +37,13 @@
     self.singleTap.numberOfTapsRequired = 1;
     [self.view addGestureRecognizer:self.singleTap];
     
-    [self loadFromUserdefaults];
-    NSLog(@"%@", _LabelArray);
-    
+    t = @"TEST";
 }
 
 - (void)createMainLabel{
     
     UILabel *mdtLabel = [[UILabel alloc] init];
-    mdtLabel.center = CGPointMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 30);
+    
     
     mdtLabel.numberOfLines = 3;
     mdtLabel.text = @"   MAP   \n    de    \n   ToDo   ";
@@ -75,16 +76,18 @@
     NSLog(@"size: %@", NSStringFromCGSize(size));
     
     // ラベルのサイズを変更
-    mdtLabel.frame = CGRectMake(mdtLabel.frame.origin.x,
-                                mdtLabel.frame.origin.y,
-                                size.width, size.height);
-    
+    mdtLabel.frame = CGRectMake(self.view.bounds.size.width / 2 - (size.width / 2), self.view.bounds.size.height / 2 - (size.height / 2), size.width, size.height);
     
     mdtLabel.layer.borderColor = [UIColor blackColor].CGColor;
     mdtLabel.layer.borderWidth = 1.5;
     mdtLabel.layer.cornerRadius = 15;
     
     [self.view addSubview:mdtLabel];
+    
+    float x = mdtLabel.frame.origin.x;
+    float y = mdtLabel.frame.origin.y;
+    
+    NSLog(@"x:%f, y:%f", x, y);
 }
 
 // ラベル作成ボタンがタップされた時
@@ -183,7 +186,7 @@
     /* -------------------- 説明文作成 -------------------- */
     UILabel *explain = [[UILabel alloc]initWithFrame:CGRectMake(40, 50, 240, 60)];
     explain.text = @"ラベル名を入力してください。";
-    explain.textColor = [UIColor colorWithRed:0 green:0 blue:0.502 alpha:1.0];;
+    explain.textColor = [UIColor colorWithRed:0.502 green:0 blue:0 alpha:1.0];;
     [_backView addSubview:explain];
     
     /* -------------------- テキストフォールド作成 --------------------- */
@@ -231,21 +234,22 @@
 // 決定ボタンが押された時
 - (void)tapdecideBtn:(UIButton *)_decideBtn{
     
+    // バックビューを閉じる
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.3];
-    
+    _backView.frame =CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height);
+    [UIView commitAnimations];
+
+    if (_LabelArray == NULL) {
+        _LabelArray = [[NSMutableArray alloc] init];
+    }
     
     [_LabelArray addObject:_ListTField.text];
-    NSLog(@"%@", _LabelArray);
+    NSLog(@"_LabelArray: %@", _LabelArray);
     
     [self saveToUserDefaults];
     
-    _backView.frame =CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height);
-    
-    [UIView commitAnimations];
-    
     [self createNewLabel];
-    
     
 }
 
@@ -315,14 +319,7 @@
 }
 
 // ラベルがタッチされた時
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
-
-    UITouch *touch = [[event allTouches] anyObject];
-    
-    if ([touch view] == _NewLabel){
-       // 少しラベルを大きくする
-    }
-}
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{}
 
 // ラベルが動かされた時
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
@@ -345,6 +342,11 @@
         
         CGPoint location = [touch locationInView:self.view];
         _NewLabel.center = location;
+        
+        float x1 = _NewLabel.frame.origin.x;
+        float y1 = _NewLabel.frame.origin.y;
+        NSLog(@"x1:%f, y1:%f", x1, y1);
+        
         
     }
 }
@@ -386,16 +388,21 @@
 }
 
 // 全削除ポップアップのボタン選択時の動作
-- (void)ADalertView:(UIAlertView *)ADalertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-//    if (buttonIndex == 1) {
-//        
-//        NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
-//        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
-//        NSLog(@"%@", _LabelArray);
-//    }
-//    else{
-//        return;
-//    }
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    if (buttonIndex == 1) {
+        [_LabelArray removeAllObjects];
+        NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
+        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
+        NSLog(@"%@", _LabelArray);
+        
+    }
+    else{
+        return;
+    }
+}
+
+- (void)drawRect:(CGRect)rect{
+    
 }
 
 // ユーザデフォルトに保存
@@ -411,9 +418,11 @@
 - (void)loadFromUserdefaults{
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSData *labelData = [userDefaults objectForKey:@"LABEL_KEY"];
     _LabelArray = [[NSMutableArray alloc] init];
+    
+    NSData *labelData = [userDefaults objectForKey:@"LABEL_KEY"];
     _LabelArray = [NSKeyedUnarchiver unarchiveObjectWithData:labelData];
+
 }
 
 - (void)didReceiveMemoryWarning {
@@ -421,3 +430,4 @@
 }
 
 @end
+
