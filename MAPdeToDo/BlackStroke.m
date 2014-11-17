@@ -35,6 +35,7 @@
     [[UIColor colorWithRed:1.0 green:0.58 blue:0.0 alpha:0.5] set ];
     [context setLineWidth:2.5f];
     
+    // 点線のパターンをセット
     CGFloat dashPattern[2] = {5.0f, 2.0f};
     [context setLineDash:dashPattern count:2 phase:0];
     
@@ -61,27 +62,6 @@
     }
     
     [context stroke];  // 描画
-    
-    
-//    UIBezierPath *path = [UIBezierPath bezierPath];
-//    
-//    //色
-//    [[UIColor colorWithRed:0.8 green:0.8 blue:0.8 alpha:1.0] set ];
-//    //幅
-//    [path setLineWidth:0.5f];
-//    
-//    //点線のパターンをセット
-//    CGFloat dashPattern[2] = { 5.0f, 2.0f };
-//    [path setLineDash:dashPattern  count:2 phase:0];
-//    
-//    //描画位置設定
-//    [path moveToPoint:CGPointMake(0, 100)];
-//    [path addLineToPoint:CGPointMake(self.bounds.size.width, 100)];
-//    
-//    //描画
-//    [path stroke];
-//    
-//    //[path setLineDash:nil  count:0 phase:0];
 }
 
 @end
