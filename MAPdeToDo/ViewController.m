@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "BlackStroke.h"
+#import "DotLine.h"
 
 @interface ViewController ()
 
@@ -17,11 +18,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    BlackStroke *bs = [[BlackStroke alloc] initWithFrame:self.view.bounds];
-    [self.view addSubview:bs];
 
-    [self createMainLabel]; // MAPdeToDoと表示
-    [self createNewButton]; // ラベル作成ボタン
+    [self createNewMapBtn]; // 真ん中ボタンかつラベル作成ボタン
     [self createDeleteImage]; // ゴミ箱
     [self createSettingButton]; // 設定
     [self createallDeleteBtn]; // 全削除ボタン
@@ -38,60 +36,34 @@
     [self.view addGestureRecognizer:self.singleTap];
     
     t = @"TEST";
+    
 }
 
-- (void)createMainLabel{
+// MAPdeToDoという名のラベル作成ボタンを作成
+- (void)createNewMapBtn{
     
-    UILabel *mdtLabel = [[UILabel alloc] init];
+    // UIImage *img = [UIImage imageNamed:@""]; // イメージ読み込み
+    UIButton *NewMapBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 35, 70, 70)];
+    // [NewButton setBackgroundImage:img forState: UIControlStateNormal]; // ボタンに画像を設定1
+    [NewMapBtn setTitle:@"   MAP   \n    de    \n   ToDo   " forState:UIControlStateNormal];
+    NewMapBtn.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    NewMapBtn.titleLabel.numberOfLines = 3;
+    NewMapBtn.titleLabel.textColor = [UIColor blackColor];
+    [NewMapBtn.layer setBackgroundColor:[[UIColor greenColor] CGColor]];
+    [NewMapBtn setTitleShadowColor:[UIColor grayColor] forState:UIControlStateNormal];
+    NewMapBtn.titleLabel.shadowOffset = CGSizeMake(1, 1);
+    [[NewMapBtn layer] setCornerRadius:15];
+    [[NewMapBtn layer] setBorderColor:[[UIColor orangeColor] CGColor]];
+    [[NewMapBtn layer] setBorderWidth:1.5f];
     
+    [NewMapBtn addTarget:self action:@selector(tapNewMapBtn:) forControlEvents:UIControlEventTouchUpInside];
     
-    mdtLabel.numberOfLines = 3;
-    mdtLabel.text = @"   MAP   \n    de    \n   ToDo   ";
+    [self.view addSubview:NewMapBtn];
     
-    
-    // --- テキストの内容によりラベルの大きさを変える ---
-    // 表示最大サイズ
-    CGSize bounds = CGSizeMake(mdtLabel.frame.size.width, 200);
-    // フォント
-    UIFont *font = mdtLabel.font;
-    // 表示モード
-    UILineBreakMode mode = mdtLabel.lineBreakMode;
-    // 文字列全体のサイズを取得
-    CGSize size;
-    if ([NSString instancesRespondToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
-        CGRect rect
-        = [mdtLabel.text boundingRectWithSize:bounds
-                                      options:NSStringDrawingUsesLineFragmentOrigin
-                                   attributes:@{NSFontAttributeName:font}
-                                      context:nil];
-        size = rect.size;
-    }
-    else {
-        CGSize size = [mdtLabel.text sizeWithFont:font
-                                constrainedToSize:bounds
-                                    lineBreakMode:mode];
-    }
-    size.width  = ceilf(size.width);
-    size.height = ceilf(size.height);
-    NSLog(@"size: %@", NSStringFromCGSize(size));
-    
-    // ラベルのサイズを変更
-    mdtLabel.frame = CGRectMake(self.view.bounds.size.width / 2 - (size.width / 2), self.view.bounds.size.height / 2 - (size.height / 2), size.width, size.height);
-    
-    mdtLabel.layer.borderColor = [UIColor blackColor].CGColor;
-    mdtLabel.layer.borderWidth = 1.5;
-    mdtLabel.layer.cornerRadius = 15;
-    
-    [self.view addSubview:mdtLabel];
-    
-    float x = mdtLabel.frame.origin.x;
-    float y = mdtLabel.frame.origin.y;
-    
-    NSLog(@"x:%f, y:%f", x, y);
 }
 
 // ラベル作成ボタンがタップされた時
-- (void)tapNewBtn:(UIButton *)NewButton{
+- (void)tapNewMapBtn:(UIButton *)NewMapButton{
     NSLog(@"NEW");
     
     [UIView beginAnimations:nil context:nil];
@@ -107,33 +79,18 @@
     NSLog(@"Set");
 }
 
-// ラベル作成ボタン作成
-- (void)createNewButton{
-    
-    // UIImage *img = [UIImage imageNamed:@""]; // イメージ読み込み
-    UIButton *NewButton = [[UIButton alloc] init]; // ボタン初期化
-    // [NewButton setBackgroundImage:img forState: UIControlStateNormal]; // ボタンに画像を設定
-    [NewButton setTitle:@"ラベル作成" forState:UIControlStateNormal]; // ボタンに文字を設定
-    [NewButton setTitleColor:[UIColor colorWithRed:0.19215 green:0.760784 blue:0.952941 alpha:1.0] forState:UIControlStateNormal]; // 色、透明度の設定
-    NewButton.frame = CGRectMake(10, 274, 80, 20); // フレーム設定
-    
-    [NewButton addTarget:self action:@selector(tapNewBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
-    
-    [self.view addSubview:NewButton]; // ビューへ表示
-    
-}
-
 // ゴミ箱イメージ作成
 - (void)createDeleteImage{
     
     UIImageView *DeleteImg = [[UIImageView alloc] init];
-    [DeleteImg setFrame:CGRectMake(self.view.bounds.size.width - 100, 274, 40, 20)];
+    [DeleteImg setFrame:CGRectMake(30, 264, 80, 40)];
     
     UIImage *img = [UIImage imageNamed:@"l03.jpg"];
     
     [DeleteImg setImage:img];
     
     [self.view addSubview:DeleteImg]; // ビューへ表示
+    [self.view sendSubviewToBack:DeleteImg];
 }
 
 // 設定ボタン作成
@@ -144,7 +101,7 @@
     // [NewButton setBackgroundImage:img forState: UIControlStateNormal]; // ボタンに画像を設定
     [SettingButton setTitle:@"設定" forState:UIControlStateNormal]; // ボタンに文字を設定
     [SettingButton setTitleColor:[UIColor colorWithRed:0.19215 green:0.760784 blue:0.952941 alpha:1.0] forState:UIControlStateNormal]; // 色、透明度の設定
-    SettingButton.frame = CGRectMake(self.view.bounds.size.width - 50, 274, 40, 20); // フレーム設定
+    SettingButton.frame = CGRectMake(self.view.bounds.size.width - 85, 274, 40, 20); // フレーム設定
     
     [SettingButton addTarget:self action:@selector(tapSettingBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
     
@@ -330,6 +287,49 @@
         
         CGPoint location = [touch locationInView:self.view];
         _NewLabel.center = location;
+        
+        float x1 = _NewLabel.frame.origin.x;
+        float y1 = _NewLabel.frame.origin.y;
+        float w1 = _NewLabel.frame.size.width;
+        float h1 = _NewLabel.frame.size.height;
+        
+        // NSLog(@"x1:%f, y1:%f, w1:%f, h1:%f", x1, y1, w1, h1);
+        
+        BlackStroke *bs = [[BlackStroke alloc] init];
+        float r1 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
+        float r2 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
+        float r3 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
+        float r4 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
+        
+        if ( x1 < 160.0 ){
+            if ( y1 < 284.0 ){ //左上
+                
+                if (r1 < 180)
+                    bs.frame = CGRectMake(x1 + w1 / 2, y1 + h1 / 2, 160 - (x1 + w1 / 2), 284 - (y1 + h1 / 2));
+            }
+            else{ // 左下
+                if (r2 < 180)
+                    bs.frame = CGRectMake(x1 + w1 / 2, 284, 160 - (x1 + w1 / 2), (y1 + h1 / 2) - 284);
+            }
+        }
+        else{
+            if ( y1 < 284.0 ){ // 右上
+                
+                if (r3 < 180)
+                    bs.frame = CGRectMake(160, y1 + h1 / 2, (x1 + w1 / 2) - 160, 284 - (y1 + h1 / 2));
+            }
+            else{ // 右下
+                
+                if (r4 < 180)
+                    bs.frame = CGRectMake(160, 284, (x1 + w1 / 2) - 160, (y1 + h1 / 2) - 284);
+            }
+        }
+        
+        [self.view addSubview:bs];
+        [self.view sendSubviewToBack:bs];
+        
+        //[bs removeFromSuperview];
+
     }
 }
 
@@ -345,9 +345,43 @@
         
         float x1 = _NewLabel.frame.origin.x;
         float y1 = _NewLabel.frame.origin.y;
-        NSLog(@"x1:%f, y1:%f", x1, y1);
+        float w1 = _NewLabel.frame.size.width;
+        float h1 = _NewLabel.frame.size.height;
         
+        NSLog(@"x1:%f, y1:%f, w1:%f, h1:%f", x1, y1, w1, h1);
+
+        DotLine *dt = [[DotLine alloc] init];
+        float r1 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
+        float r2 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
+        float r3 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
+        float r4 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
         
+        if ( x1 < 160.0 ){
+            if ( y1 < 284.0 ){ //左上
+                
+                if (r1 < 180)
+                    dt.frame = CGRectMake(x1 + w1 / 2, y1 + h1 / 2, 160 - (x1 + w1 / 2), 284 - (y1 + h1 / 2));
+            }
+            else{ // 左下
+                if (r2 < 180)
+                    dt.frame = CGRectMake(x1 + w1 / 2, 284, 160 - (x1 + w1 / 2), (y1 + h1 / 2) - 284);
+            }
+        }
+        else{
+            if ( y1 < 284.0 ){ // 右上
+                
+                if (r3 < 180)
+                    dt.frame = CGRectMake(160, y1 + h1 / 2, (x1 + w1 / 2) - 160, 284 - (y1 + h1 / 2));
+            }
+            else{ // 右下
+                
+                if (r4 < 180)
+                    dt.frame = CGRectMake(160, 284, (x1 + w1 / 2) - 160, (y1 + h1 / 2) - 284);
+            }
+        }
+        
+        [self.view addSubview:dt];
+        [self.view sendSubviewToBack:dt];
     }
 }
 
@@ -401,9 +435,6 @@
     }
 }
 
-- (void)drawRect:(CGRect)rect{
-    
-}
 
 // ユーザデフォルトに保存
 - (void)saveToUserDefaults{
