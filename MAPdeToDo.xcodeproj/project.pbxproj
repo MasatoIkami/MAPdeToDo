@@ -18,6 +18,7 @@
 		CE56B1531A08BF4700766BB8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE56B1521A08BF4700766BB8 /* QuartzCore.framework */; };
 		CE84B0421A0A033D000C7607 /* trash.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CE84B0411A0A033D000C7607 /* trash.jpg */; };
 		CE84B0471A0A14C4000C7607 /* l03.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CE84B0461A0A14C4000C7607 /* l03.jpg */; };
+		CE96C3E71A1B1BBE00EA32E9 /* Horaizon.m in Sources */ = {isa = PBXBuildFile; fileRef = CE96C3E61A1B1BBE00EA32E9 /* Horaizon.m */; };
 		CEA871E31A15F7280024B76B /* DotLine.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA871E21A15F7280024B76B /* DotLine.m */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +51,8 @@
 		CE56B1521A08BF4700766BB8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		CE84B0411A0A033D000C7607 /* trash.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = trash.jpg; sourceTree = "<group>"; };
 		CE84B0461A0A14C4000C7607 /* l03.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = l03.jpg; sourceTree = "<group>"; };
+		CE96C3E51A1B1BBE00EA32E9 /* Horaizon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Horaizon.h; path = ../Horaizon.h; sourceTree = "<group>"; };
+		CE96C3E61A1B1BBE00EA32E9 /* Horaizon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Horaizon.m; path = ../Horaizon.m; sourceTree = "<group>"; };
 		CEA871E11A15F7280024B76B /* DotLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DotLine.h; sourceTree = "<group>"; };
 		CEA871E21A15F7280024B76B /* DotLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DotLine.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -103,6 +106,8 @@
 				CE2B08D91A13344C0090FF1E /* BlackStroke.m */,
 				CEA871E11A15F7280024B76B /* DotLine.h */,
 				CEA871E21A15F7280024B76B /* DotLine.m */,
+				CE96C3E51A1B1BBE00EA32E9 /* Horaizon.h */,
+				CE96C3E61A1B1BBE00EA32E9 /* Horaizon.m */,
 				CE56B1041A089B6000766BB8 /* Main.storyboard */,
 				CE56B1071A089B6000766BB8 /* Images.xcassets */,
 				CE56B1091A089B6000766BB8 /* LaunchScreen.xib */,
@@ -254,6 +259,7 @@
 				CEA871E31A15F7280024B76B /* DotLine.m in Sources */,
 				CE56B1001A089B6000766BB8 /* AppDelegate.m in Sources */,
 				CE56B0FD1A089B6000766BB8 /* main.m in Sources */,
+				CE96C3E71A1B1BBE00EA32E9 /* Horaizon.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

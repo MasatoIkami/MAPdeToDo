@@ -7,8 +7,9 @@
 //
 
 #import "ViewController.h"
-#import "BlackStroke.h"
-#import "DotLine.h"
+#import "BlackStroke.h" // 点線を描くビュー
+#import "DotLine.h" // 実線を描くビュー
+#import "Horaizon.h" // 境界線を描くビュー
 
 @interface ViewController ()
 
@@ -23,6 +24,7 @@
     [self createDeleteImage]; // ゴミ箱
     [self createSettingButton]; // 設定
     [self createallDeleteBtn]; // 全削除ボタン
+    [self createHoraizon]; // 境界線作成
     
     [self createbackView]; // バックビューを下に表示
     
@@ -36,6 +38,16 @@
     [self.view addGestureRecognizer:self.singleTap];
     
     t = @"TEST";
+    
+}
+
+// 境界線の設定
+- (void)createHoraizon{
+    
+    Horaizon *view = [[Horaizon alloc] init];
+    view.frame = CGRectMake(self.view.bounds.origin.x, self.view.bounds.origin.y, self.view.bounds.size.width, self.view.bounds.size.height);
+    [self.view addSubview:view];
+    [self.view sendSubviewToBack:view];
     
 }
 
@@ -83,7 +95,7 @@
 - (void)createDeleteImage{
     
     UIImageView *DeleteImg = [[UIImageView alloc] init];
-    [DeleteImg setFrame:CGRectMake(30, 264, 80, 40)];
+    [DeleteImg setFrame:CGRectMake(self.view.bounds.size.width / 2 - 30, self.view.bounds.size.height - 35, 60, 30)];
     
     UIImage *img = [UIImage imageNamed:@"l03.jpg"];
     
@@ -101,7 +113,7 @@
     // [NewButton setBackgroundImage:img forState: UIControlStateNormal]; // ボタンに画像を設定
     [SettingButton setTitle:@"設定" forState:UIControlStateNormal]; // ボタンに文字を設定
     [SettingButton setTitleColor:[UIColor colorWithRed:0.19215 green:0.760784 blue:0.952941 alpha:1.0] forState:UIControlStateNormal]; // 色、透明度の設定
-    SettingButton.frame = CGRectMake(self.view.bounds.size.width - 85, 274, 40, 20); // フレーム設定
+    SettingButton.frame = CGRectMake(20, self.view.bounds.size.height - 30, 40, 20); // フレーム設定
     
     [SettingButton addTarget:self action:@selector(tapSettingBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
     
@@ -341,7 +353,19 @@
     if ([touch view] == _NewLabel){
         
         CGPoint location = [touch locationInView:self.view];
-        _NewLabel.center = location;
+        
+        if (location.y < 30){
+            _NewLabel.center = CGPointMake(location.x, 30);
+        }
+        else if (location.y > 518){
+            _NewLabel.center = CGPointMake(location.x, 518);
+        }
+        
+        else if (location.x > 125 && 195 > location.x && location.y > 249 && 319 > location.y){
+            _NewLabel.center = CGPointMake(160, 219);
+        }
+        
+        else _NewLabel.center = location;
         
         float x1 = _NewLabel.frame.origin.x;
         float y1 = _NewLabel.frame.origin.y;
@@ -387,13 +411,7 @@
 
 // 電話等緊急時の時
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event{
-    
-    UITouch *touch = [[event allTouches] anyObject];
-    if ([touch view] == _NewLabel){
-        
-        CGPoint location = [touch locationInView:self.view];
-        _NewLabel.center = location;
-    }
+    [self touchesEnded:touches withEvent:event];
 }
 
 // 全削除ボタンの作成
