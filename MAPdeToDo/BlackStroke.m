@@ -62,6 +62,7 @@
     }
     
     [context stroke];  // 描画
+    
 }
 
 @end

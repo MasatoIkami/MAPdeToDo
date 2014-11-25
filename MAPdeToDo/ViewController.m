@@ -37,6 +37,7 @@
     self.singleTap.numberOfTapsRequired = 1;
     [self.view addGestureRecognizer:self.singleTap];
     
+    
     t = @"TEST";
     
 }
@@ -76,7 +77,6 @@
 
 // ラベル作成ボタンがタップされた時
 - (void)tapNewMapBtn:(UIButton *)NewMapButton{
-    NSLog(@"NEW");
     
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.3];
@@ -135,7 +135,7 @@
     [_returnBtn setTitle:@"戻る" forState:UIControlStateNormal]; // ボタンに文字を設定
     _returnBtn.backgroundColor = [UIColor blackColor];
     _returnBtn.alpha = 1.0;// 色、透明度の設定
-    _returnBtn.frame = CGRectMake(_backView.bounds.size.width / 2 - 30, _backView.bounds.size.height - 70, 80, 40); // フレーム設定
+    _returnBtn.frame = CGRectMake(_backView.bounds.size.width / 2 - 30, _backView.bounds.size.height - 85, 80, 40); // フレーム設定
     
     [_returnBtn addTarget:self action:@selector(tapreturnBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
     
@@ -146,7 +146,7 @@
     [_decideBtn setTitle:@"決定" forState:UIControlStateNormal]; // ボタンに文字を設定
     _decideBtn.backgroundColor = [UIColor blackColor];
     _decideBtn.alpha = 1.0;// 色、透明度の設定
-    _decideBtn.frame = CGRectMake(_backView.bounds.size.width / 2 + 60, _backView.bounds.size.height - 70, 80, 40); // フレーム設定
+    _decideBtn.frame = CGRectMake(_backView.bounds.size.width / 2 + 60, _backView.bounds.size.height - 85, 80, 40); // フレーム設定
     
     [_decideBtn addTarget:self action:@selector(tapdecideBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
     
@@ -202,6 +202,26 @@
 
 // 決定ボタンが押された時
 - (void)tapdecideBtn:(UIButton *)_decideBtn{
+
+    NSInteger i;
+
+    [self loadFromUserdefaults];
+    
+    // 全削除ボタン押した時iと配列の初期化
+    if (_LabelArray == nil) {
+        
+        i = 0;
+        _LabelArray = [[NSMutableArray alloc] init];
+    }
+    
+    // 存在時はidをiに入れる
+    else {
+        NSDictionary *tmp = [[NSDictionary alloc] init];
+        tmp = [_LabelArray objectAtIndex:_LabelArray.count - 1];
+        i = [[tmp objectForKey:@"id"] intValue];
+    }
+    
+    i = i + 1;
     
     // バックビューを閉じる
     [UIView beginAnimations:nil context:nil];
@@ -209,26 +229,114 @@
     _backView.frame =CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height);
     [UIView commitAnimations];
 
-    if (_LabelArray == NULL) {
-        _LabelArray = [[NSMutableArray alloc] init];
-    }
     
-    [_LabelArray addObject:_ListTField.text];
-    NSLog(@"_LabelArray: %@", _LabelArray);
+    // dictionaryを作り配列に格納
+    _basicData = [[NSDictionary alloc] init];
+    _basicData = [NSDictionary dictionaryWithObjectsAndKeys:
+                               _ListTField.text, @"name",
+                               [NSNumber numberWithInt:i], @"id",
+                               nil];
+    [_LabelArray addObject:_basicData];
+
+    
+    [self createLabel:_ListTField.text Number:i];
     
     [self saveToUserDefaults];
     
-    [self createNewLabel];
+    [self loadFromUserdefaults];
+    NSLog(@"%@", _LabelArray);
+    
+}
+// ラベル作成メソッド
+- (void)createLabel:(NSString *)name Number:(NSInteger *)number{
+    
+    _LabelArray = [[NSMutableArray alloc] init];
+    _Label = [[UILabel alloc] init];
+    
+    //[self loadFromUserdefaults];
+    
+    //NSLog(@"%@, %@, %ld", _LabelArray, name, (long)number);
+    
+    _Label.center = CGPointMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 30);
+    _Label.text = name;
+    CGSize bounds = CGSizeMake(_Label.frame.size.width, 200);
+    UIFont *font = _Label.font;
+    UILineBreakMode mode = _Label.lineBreakMode;
+    CGSize size;
+    if ([NSString instancesRespondToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
+        CGRect rect
+        = [_Label.text boundingRectWithSize:bounds
+                                       options:NSStringDrawingUsesLineFragmentOrigin
+                                    attributes:@{NSFontAttributeName:font}
+                                       context:nil];
+        size = rect.size;
+    }
+    else {
+        CGSize size = [_Label.text sizeWithFont:font
+                                 constrainedToSize:bounds
+                                     lineBreakMode:mode];
+    }
+    size.width  = ceilf(size.width);
+    size.height = ceilf(size.height);
+    NSLog(@"size: %@", NSStringFromCGSize(size));
+    
+    _Label.frame = CGRectMake(_Label.frame.origin.x,
+                                 _Label.frame.origin.y,
+                                 size.width, size.height);
+    
+    // ユーザデフォルトへのデータ保存
+    NSMutableDictionary *tmpDic = [NSMutableDictionary dictionary];
+    [tmpDic setDictionary:_basicData];
+    
+    [tmpDic setObject:[NSNumber numberWithFloat:_Label.frame.origin.x] forKey:@"x"];
+    [tmpDic setObject:[NSNumber numberWithFloat:_Label.frame.origin.y] forKey:@"y"];
+    [tmpDic setObject:[NSNumber numberWithFloat:size.width] forKey:@"w"];
+    [tmpDic setObject:[NSNumber numberWithFloat:size.height] forKey:@"h"];
+    [_LabelArray addObject:tmpDic];
+    
+    //ラベルのカラー指定
+    _Label.textColor = [UIColor whiteColor];
+    _Label.shadowColor = [UIColor grayColor];
+    _Label.shadowOffset = CGSizeMake(0.5, 0.5);
+    
+    //ラベルの背景色を黒に指定
+    _Label.backgroundColor = [UIColor greenColor];
+    _Label.layer.borderColor = [UIColor orangeColor].CGColor;
+    _Label.layer.borderWidth = 1.5f;
+    //ラベルの角丸指定
+    [[_Label layer] setCornerRadius:8.0];
+    //ラベルのはみ出しを許可するか
+    [_Label setClipsToBounds:YES];
+    
+    //タッチの検知をするか
+    _Label.userInteractionEnabled = YES;
+    
+    [_Label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesBegan:withEvent:)]];
+    
+    [_Label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesMoved:withEvent:)]];
+    
+    [_Label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesEnded:withEvent:)]];
+    
+    [_Label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesCancelled:withEvent:)]];
+    
+    _Label.tag = number;
+    
+    [self saveToUserDefaults];
+    
+    [self.view addSubview:_Label];
+    [self.view bringSubviewToFront:_Label];
     
 }
 
 // 新たなラベルを作成
 - (void)createNewLabel{
     
+    
     _NewLabel = [[UILabel alloc] init];
     _NewLabel.center = CGPointMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 30);
     
     _NewLabel.text = _ListTField.text;
+    
     
     // --- テキストの内容によりラベルの大きさを変える ---
     // 表示最大サイズ
@@ -260,13 +368,23 @@
     _NewLabel.frame = CGRectMake(_NewLabel.frame.origin.x,
                                 _NewLabel.frame.origin.y,
                                 size.width, size.height);
+    
+//    // 初期Rectを書き込み
+//    [_BasicDic setObject:[NSNumber numberWithFloat: _NewLabel.frame.origin.x] forKey:@"x"];
+//    [_BasicDic setObject:[NSNumber numberWithFloat: _NewLabel.frame.origin.y] forKey:@"y"];
+//    [_BasicDic setObject:[NSNumber numberWithFloat: size.width] forKey:@"w"];
+//    [_BasicDic setObject:[NSNumber numberWithFloat: size.height] forKey:@"h"];
+    
+    
     //ラベルのカラー指定
     _NewLabel.textColor = [UIColor whiteColor];
     _NewLabel.shadowColor = [UIColor grayColor];
     _NewLabel.shadowOffset = CGSizeMake(0.5, 0.5);
     
     //ラベルの背景色を黒に指定
-    _NewLabel.backgroundColor = [UIColor blackColor];
+    _NewLabel.backgroundColor = [UIColor greenColor];
+    _NewLabel.layer.borderColor = [UIColor orangeColor].CGColor;
+    _NewLabel.layer.borderWidth = 1.5f;
     //ラベルの角丸指定
     [[_NewLabel layer] setCornerRadius:8.0];
     //ラベルのはみ出しを許可するか
@@ -283,27 +401,55 @@
     
     [_NewLabel addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesCancelled:withEvent:)]];
     
+    //_NewLabel.tag = ;
+    
     [self.view addSubview:_NewLabel];
     [self.view bringSubviewToFront:_NewLabel];
+    
 }
 
 // ラベルがタッチされた時
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{}
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+
+//    UITouch *touch = [[event allTouches] anyObject];
+//    UILabel *sptchlabel = (UILabel *)[self.view viewWithTag:_Label.tag];
+//    if ([event touchesForView:sptchlabel]){
+    
+        NSLog(@"touched");
+//        
+//        UILabel *sptchlabel = (UILabel *)[self.view viewWithTag:_Label.tag];
+//    
+//        [self loadFromUserdefaults];
+//        for (int i = 0; i < _LabelArray.count; i++) {
+//            if (_Label.tag == i){
+//                NSLog(@"%d",i);
+//            }
+//        }
+//    }
+    
+    //UILabel *sptchlabel = (UILabel *)[self.view viewWithTag:_NewLabel.tag];
+    
+    //NSLog(@"%@", sptchlabel);
+    
+}
 
 // ラベルが動かされた時
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
     
     UITouch *touch = [[event allTouches] anyObject];
+    //UILabel *tchlabel = (UILabel *)[touch view];
     
-    if ([touch view] == _NewLabel){
+    UILabel *sptchlabel = (UILabel *)[self.view viewWithTag:_Label.tag];
+    
+    if ([touch view] == sptchlabel){
         
         CGPoint location = [touch locationInView:self.view];
-        _NewLabel.center = location;
+        sptchlabel.center = location;
         
-        float x1 = _NewLabel.frame.origin.x;
-        float y1 = _NewLabel.frame.origin.y;
-        float w1 = _NewLabel.frame.size.width;
-        float h1 = _NewLabel.frame.size.height;
+        float x1 = sptchlabel.frame.origin.x;
+        float y1 = sptchlabel.frame.origin.y;
+        float w1 = sptchlabel.frame.size.width;
+        float h1 = sptchlabel.frame.size.height;
         
         // NSLog(@"x1:%f, y1:%f, w1:%f, h1:%f", x1, y1, w1, h1);
         
@@ -349,30 +495,32 @@
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
     
     UITouch *touch = [[event allTouches] anyObject];
+    //UILabel *tchlabel = (UILabel *)[touch view];
+    UILabel *sptchlabel = (UILabel *)[self.view viewWithTag:_Label.tag];
     
-    if ([touch view] == _NewLabel){
+    if ([touch view] == sptchlabel){
         
         CGPoint location = [touch locationInView:self.view];
         
         if (location.y < 30){
-            _NewLabel.center = CGPointMake(location.x, 30);
+            sptchlabel.center = CGPointMake(location.x, 30);
         }
         else if (location.y > 518){
-            _NewLabel.center = CGPointMake(location.x, 518);
+            sptchlabel.center = CGPointMake(location.x, 518);
         }
         
         else if (location.x > 125 && 195 > location.x && location.y > 249 && 319 > location.y){
-            _NewLabel.center = CGPointMake(160, 219);
+            sptchlabel.center = CGPointMake(160, 219);
         }
         
-        else _NewLabel.center = location;
+        else sptchlabel.center = location;
         
-        float x1 = _NewLabel.frame.origin.x;
-        float y1 = _NewLabel.frame.origin.y;
-        float w1 = _NewLabel.frame.size.width;
-        float h1 = _NewLabel.frame.size.height;
+        float x1 = sptchlabel.frame.origin.x;
+        float y1 = sptchlabel.frame.origin.y;
+        float w1 = sptchlabel.frame.size.width;
+        float h1 = sptchlabel.frame.size.height;
         
-        NSLog(@"x1:%f, y1:%f, w1:%f, h1:%f", x1, y1, w1, h1);
+        //NSLog(@"x1:%f, y1:%f, w1:%f, h1:%f", x1, y1, w1, h1);
 
         DotLine *dt = [[DotLine alloc] init];
         float r1 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
@@ -452,7 +600,6 @@
         return;
     }
 }
-
 
 // ユーザデフォルトに保存
 - (void)saveToUserDefaults{
