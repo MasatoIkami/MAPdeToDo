@@ -28,7 +28,7 @@
     float y = self.frame.origin.y;
     float w = self.frame.size.width;
     float h = self.frame.size.height;
-    NSLog(@"LINESIZE: %f, %f, %f, %f", x, y, w, h);
+    //NSLog(@"LINESIZE: %f, %f, %f, %f", x, y, w, h);
     
     CGContextRef context = UIGraphicsGetCurrentContext();
     
