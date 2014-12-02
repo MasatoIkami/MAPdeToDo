@@ -24,6 +24,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    _Flag = NO;
     [self createNewMapBtn]; // 真ん中ボタンかつラベル作成ボタン
     [self createDeleteImage]; // ゴミ箱
     [self createSettingButton]; // 設定
@@ -31,7 +32,7 @@
     [self createHoraizon]; // 境界線作成
     
     [self createbackView]; // バックビューを下に表示
-    
+    //[self createlistback]; // リスト作成画面を下に表示
     [self loadFromUserdefaults]; // データを読み出す
     NSLog(@"%@", _LabelArray);
     
@@ -68,11 +69,18 @@
         
             //タッチの検知をするか
             label.userInteractionEnabled = YES;
-            //タッチ機能の追加
-            [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesBegan:withEvent:)]];
-            [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesMoved:withEvent:)]];
-            [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesEnded:withEvent:)]];
-            [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesCancelled:withEvent:)]];
+            // タップ検知
+            UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc]
+                                                  initWithTarget:self
+                                                  action:@selector(handleTapGesture:)];
+            tapGesture.numberOfTapsRequired = 1;
+            [label addGestureRecognizer:tapGesture];
+            // 長押し検知
+            UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc]
+                                                              initWithTarget:self
+                                                              action:@selector(handleLongPressGesture:)];
+            longPressGesture.minimumPressDuration = 0.8f;
+            [label addGestureRecognizer:longPressGesture];
         
             label.tag = num;
             [self.view addSubview:label];
@@ -93,6 +101,7 @@
 
         }
         
+        _previous_dt = nil;
     }
     
     //ビューの初期化時にジェスチャをself.viewに登録
@@ -221,28 +230,29 @@
     [_backView addSubview:explain];
     
     /* -------------------- テキストフォールド作成 --------------------- */
-    _ListTField = [[UITextField alloc] initWithFrame:CGRectMake(40, 100, 240, 30)];
+    _LabelTField = [[UITextField alloc] initWithFrame:CGRectMake(40, 100, 240, 30)];
     
-    _ListTField.backgroundColor = [UIColor grayColor];
+    _LabelTField.backgroundColor = [UIColor grayColor];
     
-    [_ListTField addTarget:self action:@selector(tapReturnList:) forControlEvents:
+    [_LabelTField addTarget:self action:@selector(tapReturnLabel:) forControlEvents:
      UIControlEventEditingDidEndOnExit];
     
-    [_backView addSubview:_ListTField];
+    [_backView addSubview:_LabelTField];
 }
 
-- (void)tapReturnList:(UITextField *)ListTTield{}
+- (void)tapReturnLabel:(UITextField *)LabelTTield{}
 
 //シングルタップされたらresignFirstResponderでキーボードを閉じる
 -(void)onSingleTap:(UITapGestureRecognizer *)recognizer{
-    [_ListTField resignFirstResponder];
+    [_LabelTField resignFirstResponder];
+    [_listTField resignFirstResponder];
 }
 
 //キーボードを表示していない時は、他のジェスチャに影響を与えないように無効化しておく。
 -(BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     if (gestureRecognizer == self.singleTap) {
         // キーボード表示中のみ有効
-        if (_ListTField.isFirstResponder) {
+        if (_LabelTField.isFirstResponder || _listTField.isFirstResponder) {
             return YES;
         } else {
             return NO;
@@ -258,7 +268,8 @@
     [UIView setAnimationDuration:0.3];
     
     _backView.frame =CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height);
-    
+    _listbackView.frame =CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height);
+    _Flag = NO;
     [UIView commitAnimations];
 }
 
@@ -287,12 +298,12 @@
     _basicData = [[NSDictionary alloc] init];
     // 名前とidだけを配列に格納
     _basicData = [NSDictionary dictionaryWithObjectsAndKeys:
-                               _ListTField.text, @"name",
+                               _LabelTField.text, @"name",
                                [NSNumber numberWithInt:i], @"id",
                                nil];
 
     // ラベル作成と同時に位置座標データの保存
-    UILabel *Label = [self createLabel:_ListTField.text];
+    UILabel *Label = [self createLabel:_LabelTField.text];
     Label.tag = i;
     [self.view addSubview:Label];
     [self.view bringSubviewToFront:Label];
@@ -300,6 +311,8 @@
     //確認用
     [self loadFromUserdefaults];
     NSLog(@"%@", _LabelArray);
+    
+    _previous_dt = nil;
     
     // バックビューを閉じる
     [UIView beginAnimations:nil context:nil];
@@ -355,11 +368,21 @@
     
     //タッチの検知をするか
     label.userInteractionEnabled = YES;
-    [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesBegan:withEvent:)]];
-    [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesMoved:withEvent:)]];
-    [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesEnded:withEvent:)]];
-    [label addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(touchesCancelled:withEvent:)]];
     
+    // タップ検知
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc]
+                                          initWithTarget:self
+                                          action:@selector(handleTapGesture:)];
+    tapGesture.numberOfTapsRequired = 2;
+    [label addGestureRecognizer:tapGesture];
+    
+    // 長押し検知
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc]
+                                                      initWithTarget:self
+                                                      action:@selector(handleLongPressGesture:)];
+    longPressGesture.minimumPressDuration = 0.8f;
+    [label addGestureRecognizer:longPressGesture];
+
     // ユーザデフォルトへのデータ保存
     NSMutableDictionary *tmpDic = [NSMutableDictionary dictionary];
     [tmpDic setDictionary:_basicData];
@@ -374,26 +397,145 @@
     return label;
 }
 
-// ラベルがタッチされた時
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
 
-  /*  UITouch *touch = [[event allTouches] anyObject];
+// タップ検知時
+- (void)handleTapGesture:(UITapGestureRecognizer *)sender
+{
+    NSLog(@"TapGesture");
+}
+// 長押し検知時
+- (void)handleLongPressGesture:(UILongPressGestureRecognizer *)sender
+{
+    if (!_Flag) {
+        
+        UITouch *touch = sender;
+        UILabel *sptchlabel = (UILabel *)[touch view];
+
+        [self loadFromUserdefaults];
+
+        NSDictionary *tmp = [[NSDictionary alloc] init];
+        tmp = [_LabelArray objectAtIndex:sptchlabel.tag-1];
+        NSString *name = [tmp objectForKey:@"name"];
     
-    UILabel *tch = (UILabel *)[touch view]; // タッチされたビューをラベルとして認識
+        [self createlistback:name];
+    
+        // リストバックビューの表示
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationDuration:0.3];
+        _listbackView.frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+        [UIView commitAnimations];
+    }
 
-    if (tch.tag > 0)
-        NSLog(@"%ld", tch.tag);
-    else
-        NSLog(@"others"); */
 }
 
+// リスト作成バックビューの生成
+- (void)createlistback:(NSString *)name{
+    
+    /* -------------------- バックビューの作成 -------------------- */
+    _listbackView = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height)];
+    _listbackView.backgroundColor = [UIColor yellowColor];
+    _listbackView.alpha = 0.8;
+    
+    [self.view addSubview:_listbackView];
+    
+    /* -------------------- 戻るボタン -------------------- */
+    _returnBtn = [[UIButton alloc] init]; // ボタン初期化
+    [_returnBtn setTitle:@"戻る" forState:UIControlStateNormal]; // ボタンに文字を設定
+    _returnBtn.backgroundColor = [UIColor blackColor];
+    _returnBtn.alpha = 1.0;// 色、透明度の設定
+    _returnBtn.frame = CGRectMake(_backView.bounds.size.width / 2 - 30, _backView.bounds.size.height - 85, 80, 40); // フレーム設定
+    
+    [_returnBtn addTarget:self action:@selector(tapreturnBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
+    
+    [_listbackView addSubview:_returnBtn]; // ビューへ表示
+    
+    /* -------------------- 決定ボタン -------------------- */
+    _decideBtn = [[UIButton alloc] init]; // ボタン初期化
+    [_decideBtn setTitle:@"決定" forState:UIControlStateNormal]; // ボタンに文字を設定
+    _decideBtn.backgroundColor = [UIColor blackColor];
+    _decideBtn.alpha = 1.0;// 色、透明度の設定
+    _decideBtn.frame = CGRectMake(_backView.bounds.size.width / 2 + 60, _backView.bounds.size.height - 85, 80, 40); // フレーム設定
+    
+    [_decideBtn addTarget:self action:@selector(tapdecidelistBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
+    
+    [_listbackView addSubview:_decideBtn]; // ビューへ表示
+    
+    /* -------------------- ラベル情報の表示 -------------------- */
+    UILabel *labelname = [[UILabel alloc] initWithFrame:CGRectMake(40, 40, 240, 15)];
+    labelname.textColor = [UIColor blueColor];
+    labelname.text = [NSString stringWithFormat:@"ラベル名: %@", name];
+    labelname.alpha = 1.0;
+    
+    [_listbackView addSubview:labelname];
+    
+    
+    /* -------------------- テキストフォールド作成 --------------------- */
+    _listTField = [[UITextField alloc] initWithFrame:CGRectMake(40, 60, 240, 30)];
+    
+    _listTField.backgroundColor = [UIColor blueColor];
+    _listTField.textColor = [UIColor cyanColor];
+    _listTField.alpha = 0.5;
+    
+    [_listTField addTarget:self action:@selector(tapReturnList:) forControlEvents:
+     UIControlEventEditingDidEndOnExit];
+    
+    [_listbackView addSubview:_listTField];
+    
+    /* -------------------- 詳細記述画面の作成 -------------------- */
+    _listDetail = [[UITextView alloc] initWithFrame:CGRectMake(10, 100, _listbackView.bounds.size.width - 20, _listbackView.bounds.size.height - 205)];
+    _listDetail.backgroundColor = [UIColor blueColor];
+    _listDetail.text = @"詳細を入力してください。";
+    _listDetail.textColor = [UIColor cyanColor];
+    _listDetail.alpha = 0.5;
+    
+    [_listbackView addSubview:_listDetail];
+    
+    _Flag = YES;
+    
+}
+
+- (void)tapReturnList:(UITextField *)listTTield{}
+
+// リストの決定ボタン押された時
+- (void)tapdecidelistBtn:(UIButton *)_decideBtn{
+    
+    // バックビューを閉じる
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.3];
+    _listbackView.frame =CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height);
+    [UIView commitAnimations];
+    _Flag = NO;
+    
+}
+//// ラベルがタッチされた時
+//- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+//
+//    UITouch *touch = [[event allTouches] anyObject];
+//    UILabel *sptchlabel = (UILabel *)[touch view];
+//    
+//    if (sptchlabel.tag > 0){
+//        [self loadFromUserdefaults];
+//     
+//        NSDictionary *tmp = [[NSDictionary alloc] init];
+//        tmp = [_LabelArray objectAtIndex:sptchlabel.tag-1];
+//        
+//        float lx = [[tmp objectForKey:@"linex"] floatValue];
+//        float ly = [[tmp objectForKey:@"liney"] floatValue];
+//        float lw = [[tmp objectForKey:@"linew"] floatValue];
+//        float lh = [[tmp objectForKey:@"lineh"] floatValue];
+//        
+//        
+//    }
+//    
+//}
+//
 // ラベルが動かされた時 位置情報を取得しつつ点線を表示
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
     
     UITouch *touch = [[event allTouches] anyObject];
     UILabel *sptchlabel = (UILabel *)[touch view];
     if (sptchlabel.tag > 0){
-        
+    
         [_previous_bs removeFromSuperview];
         
         CGPoint location = [touch locationInView:self.view];
@@ -555,7 +697,19 @@
             }
         }
         
+        // nameとidを再保存
+        [self loadFromUserdefaults];
+        NSDictionary *tmp = [[NSDictionary alloc] init];
+        tmp = [_LabelArray objectAtIndex:sptchlabel.tag-1];
+        NSString *name = [tmp objectForKey:@"name"];
+        NSInteger num = [[tmp objectForKey:@"id"] intValue];
+        
+        [tmpDic setObject:name forKey:@"name"];
+        [tmpDic setObject:[NSNumber numberWithInt:num] forKey:@"id"];
+        
         NSLog(@"tmpdic%@", tmpDic);
+        
+        //tmpDicをLabelArrayに保存
         [_LabelArray replaceObjectAtIndex:sptchlabel.tag-1 withObject:tmpDic];
         
         [self saveToUserDefaults];
@@ -605,7 +759,7 @@
         NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
         [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
         NSLog(@"%@", _LabelArray);
-        
+
     }
     else{
         return;

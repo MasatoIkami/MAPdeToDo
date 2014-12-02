@@ -14,12 +14,20 @@
     UIView *_backView;
     UIButton *_returnBtn;
     UIButton *_decideBtn;
-    UITextField *_ListTField;
+    UITextField *_LabelTField;
     
     NSMutableArray *_LabelArray;
     NSDictionary *_basicData;
     
     NSString *t;
+    
+    UIView *_listbackView;
+    UITextField *_listTField;
+    UIDatePicker *_listDate;
+    UITextView *_listDetail;
+    
+    BOOL _Flag;
+    
 }
 
 @property (nonatomic, strong) UITapGestureRecognizer *singleTap;
