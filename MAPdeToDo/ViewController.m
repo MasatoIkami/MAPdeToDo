@@ -15,7 +15,9 @@
     
     DotLine *_previous_dt;
     BlackStroke *_previous_bs;
+    
     NSMutableArray *_dt_array; // 初期に描画した線を保存する配列
+    NSMutableArray *_labelObject_array; // 描画したラベルを保存する配列
 }
 
 @end
@@ -26,33 +28,60 @@
     [super viewDidLoad];
 
     _Flag = NO;
+    
+    /* -------------------- 第一画面の配置 -------------------- */
     [self createNewMapBtn]; // 真ん中ボタンかつラベル作成ボタン
     [self createDeleteImage]; // ゴミ箱
     [self createSettingButton]; // 設定
     [self createallDeleteBtn]; // 全削除ボタン
     [self createHoraizon]; // 境界線作成
-    
     [self createbackView]; // バックビューを下に表示
-    //[self createlistback]; // リスト作成画面を下に表示
+    
+    
+    /* -------------------- データ読み出しとユーザ作成物の表示 -------------------- */
     [self loadFromUserdefaults]; // データを読み出す
     NSLog(@"%@", _LabelArray);
     
     _dt_array = [[NSMutableArray alloc] init];
+    _labelObject_array = [[NSMutableArray alloc] init];
     
     [self indicateLabelLine]; // 記憶したラベルと線を表示
 
     _previous_dt = nil;
     
-    //ビューの初期化時にジェスチャをself.viewに登録
+    
+    
+    /* -------------------- ビューの初期化時にジェスチャをself.viewに登録 -------------------- */
     self.singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onSingleTap:)];
     self.singleTap.delegate = self;
     self.singleTap.numberOfTapsRequired = 1;
     [self.view addGestureRecognizer:self.singleTap];
     
-    t = @"TEST";
+    
+    t = @"TEST"; // NSLog用変数
 }
 
-// 境界線の設定
+// ユーザデフォルトに保存
+- (void)saveToUserDefaults{
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSData *labelData = [NSKeyedArchiver archivedDataWithRootObject:_LabelArray];
+    [userDefaults setObject:labelData forKey:@"LABEL_KEY"];
+    [userDefaults synchronize];
+}
+
+// ユーザデフォルトから読み出し
+- (void)loadFromUserdefaults{
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    _LabelArray = [[NSMutableArray alloc] init];
+    
+    NSData *labelData = [userDefaults objectForKey:@"LABEL_KEY"];
+    _LabelArray = [NSKeyedUnarchiver unarchiveObjectWithData:labelData];
+    
+}
+
+// 上下境界線の設定
 - (void)createHoraizon{
     
     Horaizon *view = [[Horaizon alloc] init];
@@ -66,9 +95,9 @@
 - (void)createNewMapBtn{
     
     // UIImage *img = [UIImage imageNamed:@""]; // イメージ読み込み
-    UIButton *NewMapBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 35, 70, 70)];
+    UIButton *NewMapBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 35, 70, 70)]; // 初期化と位置決定
     // [NewButton setBackgroundImage:img forState: UIControlStateNormal]; // ボタンに画像を設定1
-    [NewMapBtn setTitle:@"   MAP   \n    de    \n   ToDo   " forState:UIControlStateNormal];
+    [NewMapBtn setTitle:@"   MAP   \n    de    \n   ToDo   " forState:UIControlStateNormal]; // 名前
     NewMapBtn.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
     NewMapBtn.titleLabel.numberOfLines = 3;
     NewMapBtn.titleLabel.textColor = [UIColor blackColor];
@@ -79,15 +108,15 @@
     [[NewMapBtn layer] setBorderColor:[[UIColor orangeColor] CGColor]];
     [[NewMapBtn layer] setBorderWidth:1.5f];
     
-    [NewMapBtn addTarget:self action:@selector(tapNewMapBtn:) forControlEvents:UIControlEventTouchUpInside];
+    [NewMapBtn addTarget:self action:@selector(tapNewMapBtn:) forControlEvents:UIControlEventTouchUpInside]; // メソッド作成
     
-    [self.view addSubview:NewMapBtn];
-    
+    [self.view addSubview:NewMapBtn]; // 表示
 }
 
 // ラベル作成ボタンがタップされた時
 - (void)tapNewMapBtn:(UIButton *)NewMapButton{
     
+    /* -------------------- アニメーションでラベル作成ビューを表示 -------------------- */
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.3];
     
@@ -99,17 +128,16 @@
 // 設定ボタンがタップされた時
 - (void)tapSettingBtn:(UIButton *)SettingButton{
     NSLog(@"Set");
+    
 }
 
 // ゴミ箱イメージ作成
 - (void)createDeleteImage{
     
-    UIImageView *DeleteImg = [[UIImageView alloc] init];
-    [DeleteImg setFrame:CGRectMake(self.view.bounds.size.width / 2 - 30, self.view.bounds.size.height - 35, 60, 30)];
-    
-    UIImage *img = [UIImage imageNamed:@"l03.jpg"];
-    
-    [DeleteImg setImage:img];
+    UIImageView *DeleteImg = [[UIImageView alloc] init]; // 初期化
+    [DeleteImg setFrame:CGRectMake(self.view.bounds.size.width / 2 - 30, self.view.bounds.size.height - 35, 60, 30)]; // 位置
+    UIImage *img = [UIImage imageNamed:@"l03.jpg"]; // 参照画像
+    [DeleteImg setImage:img]; // 画像をセット
     
     [self.view addSubview:DeleteImg]; // ビューへ表示
     [self.view sendSubviewToBack:DeleteImg];
@@ -130,6 +158,56 @@
     [self.view addSubview:SettingButton]; // ビューへ表示
     
 }
+
+// 全削除ボタンの作成
+- (void)createallDeleteBtn{
+    
+    // UIImage *img = [UIImage imageNamed:@""]; // イメージ読み込み
+    UIButton *AllDeleteButton = [[UIButton alloc] init]; // ボタン初期化
+    // [NewButton setBackgroundImage:img forState: UIControlStateNormal]; // ボタンに画像を設定
+    [AllDeleteButton setTitle:@"全削除" forState:UIControlStateNormal]; // ボタンに文字を設定
+    [AllDeleteButton setTitleColor:[UIColor colorWithRed:0.19215 green:0.760784 blue:0.952941 alpha:1.0] forState:UIControlStateNormal]; // 色、透明度の設定
+    AllDeleteButton.frame = CGRectMake(self.view.bounds.size.width - 70, self.view.bounds.size.height - 30, 60, 20); // フレーム設定
+    
+    [AllDeleteButton addTarget:self action:@selector(tapADBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
+    
+    [self.view addSubview:AllDeleteButton]; // ビューへ表示
+}
+
+// 全削除ボタンのタップ時のポップアップ
+- (void)tapADBtn:(UIButton *)AllDeleteButton{
+    UIAlertView *ADalert = [[UIAlertView alloc] initWithTitle:@"全てのデータを削除しますか？"
+                                                      message:@"この作業は戻せません。"
+                                                     delegate:self
+                                            cancelButtonTitle:@"Cancel"
+                                            otherButtonTitles:@"全削除", nil];
+    [ADalert show];
+}
+
+// 全削除ポップアップのボタン選択時の動作
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    if (buttonIndex == 1) {
+        
+        // ラベルの削除
+        for (UILabel *tmpLabel in _labelObject_array) {
+            [tmpLabel removeFromSuperview];
+        }
+        
+        // 線の削除
+        for (DotLine *tmpLine in _dt_array) {
+            [tmpLine removeFromSuperview];
+        }
+        
+        NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
+        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
+        NSLog(@"%@", _LabelArray);
+        
+    }
+    else{
+        return;
+    }
+}
+
 // ラベル作成画面の追加
 - (void)createbackView{
     
@@ -165,12 +243,11 @@
     /* -------------------- 説明文作成 -------------------- */
     UILabel *explain = [[UILabel alloc]initWithFrame:CGRectMake(40, 50, 240, 60)];
     explain.text = @"ラベル名を入力してください。";
-    explain.textColor = [UIColor colorWithRed:0.502 green:0 blue:0 alpha:1.0];;
+    explain.textColor = [UIColor colorWithRed:0.502 green:0 blue:0 alpha:1.0];
     [_backView addSubview:explain];
     
-    /* -------------------- テキストフォールド作成 --------------------- */
+    /* -------------------- テキストフィールド作成 --------------------- */
     _LabelTField = [[UITextField alloc] initWithFrame:CGRectMake(40, 100, 240, 30)];
-    
     _LabelTField.backgroundColor = [UIColor grayColor];
     
     [_LabelTField addTarget:self action:@selector(tapReturnLabel:) forControlEvents:
@@ -181,13 +258,13 @@
 
 - (void)tapReturnLabel:(UITextField *)LabelTTield{}
 
-//シングルタップされたらresignFirstResponderでキーボードを閉じる
+// シングルタップされたらresignFirstResponderでキーボードを閉じる
 -(void)onSingleTap:(UITapGestureRecognizer *)recognizer{
     [_LabelTField resignFirstResponder];
     [_listTField resignFirstResponder];
 }
 
-//キーボードを表示していない時は、他のジェスチャに影響を与えないように無効化しておく。
+// キーボードを表示していない時は、他のジェスチャに影響を与えないように無効化しておく。
 -(BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     if (gestureRecognizer == self.singleTap) {
         // キーボード表示中のみ有効
@@ -200,9 +277,10 @@
     return YES;
 }
 
-// 戻るボタンが押された時
+// (ラベル、リスト作成画面にて)戻るボタンが押された時
 - (void)tapreturnBtn:(UIButton *)_returnBtn{
     
+    /* -------------------- アニメーションでビューを閉じる -------------------- */
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.3];
     
@@ -212,12 +290,87 @@
     [UIView commitAnimations];
 }
 
+// ラベル作成メソッド
+- (UILabel *)createLabel:(NSString *)name{
+    
+    /* -------------------- 新規ラベルの作成 -------------------- */
+    UILabel *label = [[UILabel alloc] init]; // 初期化
+    
+    label.center = CGPointMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 30); // 位置
+    label.text = name; // ラベル名
+    CGSize bounds = CGSizeMake(label.frame.size.width, 200);
+    UIFont *font = label.font;
+    UILineBreakMode mode = label.lineBreakMode;
+    CGSize size;
+    if ([NSString instancesRespondToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
+        CGRect rect
+        = [label.text boundingRectWithSize:bounds
+                                   options:NSStringDrawingUsesLineFragmentOrigin
+                                attributes:@{NSFontAttributeName:font}
+                                   context:nil];
+        size = rect.size;
+    }
+    else {
+        CGSize size = [label.text sizeWithFont:font
+                             constrainedToSize:bounds
+                                 lineBreakMode:mode];
+    }
+    size.width  = ceilf(size.width);
+    size.height = ceilf(size.height);
+    NSLog(@"size: %@", NSStringFromCGSize(size));
+    
+    // 位置や大きさを再設定
+    label.frame = CGRectMake(label.frame.origin.x,
+                             label.frame.origin.y,
+                             size.width, size.height);
+    
+    //ラベルのカラー指定
+    label.textColor = [UIColor whiteColor];
+    label.shadowColor = [UIColor grayColor];
+    label.shadowOffset = CGSizeMake(0.5, 0.5);
+    //ラベルの背景色を黒に指定
+    label.backgroundColor = [UIColor greenColor];
+    label.layer.borderColor = [UIColor orangeColor].CGColor;
+    label.layer.borderWidth = 1.5f;
+    //ラベルの角丸指定
+    [[label layer] setCornerRadius:8.0];
+    //ラベルのはみ出しを許可するか
+    [label setClipsToBounds:YES];
+    
+    
+    /* -------------------- タッチ検出機能の追加 -------------------- */
+    //タッチの検知をするか
+    label.userInteractionEnabled = YES;
+    // 長押し検知
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc]
+                                                      initWithTarget:self
+                                                      action:@selector(handleLongPressGesture:)];
+    longPressGesture.minimumPressDuration = 0.8f;
+    [label addGestureRecognizer:longPressGesture];
+    
+    
+    /* -------------------- ユーザデフォルトへラベルデータ(名前、id、位置、大きさ)保存 -------------------- */
+    NSMutableDictionary *tmpDic = [NSMutableDictionary dictionary]; // 配列の初期化
+    [tmpDic setDictionary:_basicData]; // 名前とidを読み出し
+    // 位置と大きさをセット
+    [tmpDic setObject:[NSNumber numberWithFloat:label.frame.origin.x] forKey:@"x"];
+    [tmpDic setObject:[NSNumber numberWithFloat:label.frame.origin.y] forKey:@"y"];
+    [tmpDic setObject:[NSNumber numberWithFloat:size.width] forKey:@"w"];
+    [tmpDic setObject:[NSNumber numberWithFloat:size.height] forKey:@"h"];
+    [_LabelArray addObject:tmpDic];
+    [self saveToUserDefaults];
+    
+    return label;
+}
+
 // 決定ボタンが押された時
 - (void)tapdecideBtn:(UIButton *)_decideBtn{
 
-    NSInteger i;
-
     [self loadFromUserdefaults];
+    
+    /* -------------------- ラベルidをカウント -------------------- */
+    NSInteger i; // ラベルidカウント用変数
+    
     // 全削除ボタン押した時iと配列の初期化
     if (_LabelArray == nil) {
         i = 0;
@@ -233,6 +386,7 @@
     // idカウントを+1
     i = i + 1;
     
+    /* -------------------- ラベルデータの格納と表示 -------------------- */
     // 配列の初期化
     _basicData = [[NSDictionary alloc] init];
     // 名前とidだけを配列に格納
@@ -241,16 +395,17 @@
                                [NSNumber numberWithInt:i], @"id",
                                nil];
 
-    // ラベル作成と同時に位置座標データの保存
-    _nlabel = [self createLabel:_LabelTField.text];
+    _nlabel = [self createLabel:_LabelTField.text]; // ラベル作成
     _nlabel.tag = i;
-    [self.view addSubview:_nlabel];
+    [_labelObject_array addObject:_nlabel]; // ラベル用配列に格納
+    [self.view addSubview:_nlabel]; // 画面に表示
     [self.view bringSubviewToFront:_nlabel];
     
     //確認用
     [self loadFromUserdefaults];
     NSLog(@"%@", _LabelArray);
     
+    /* -------------------- 線配列の初期化 -------------------- */
     _previous_dt = nil;
     
     // ダミーの線情報を入れておく
@@ -258,107 +413,12 @@
     dt.frame = CGRectMake(0, 0, 0, 0);
     [_dt_array addObject:dt];
     
-    // バックビューを閉じる
+    /* -------------------- アニメーションでラベル作成ビューを閉じる -------------------- */
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.3];
     _backView.frame =CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height);
     [UIView commitAnimations];
     
-}
-
-// ラベル作成メソッド
-- (UILabel *)createLabel:(NSString *)name{
-    
-    UILabel *label = [[UILabel alloc] init];
-    
-    label.center = CGPointMake(self.view.bounds.size.width / 2 - 35, self.view.bounds.size.height / 2 - 30);
-    label.text = name;
-    CGSize bounds = CGSizeMake(label.frame.size.width, 200);
-    UIFont *font = label.font;
-    UILineBreakMode mode = label.lineBreakMode;
-    CGSize size;
-    if ([NSString instancesRespondToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
-        CGRect rect
-        = [label.text boundingRectWithSize:bounds
-                                       options:NSStringDrawingUsesLineFragmentOrigin
-                                    attributes:@{NSFontAttributeName:font}
-                                       context:nil];
-        size = rect.size;
-    }
-    else {
-        CGSize size = [label.text sizeWithFont:font
-                                 constrainedToSize:bounds
-                                     lineBreakMode:mode];
-    }
-    size.width  = ceilf(size.width);
-    size.height = ceilf(size.height);
-    NSLog(@"size: %@", NSStringFromCGSize(size));
-    
-    label.frame = CGRectMake(label.frame.origin.x,
-                                 label.frame.origin.y,
-                                 size.width, size.height);
-    
-    //ラベルのカラー指定
-    label.textColor = [UIColor whiteColor];
-    label.shadowColor = [UIColor grayColor];
-    label.shadowOffset = CGSizeMake(0.5, 0.5);
-    //ラベルの背景色を黒に指定
-    label.backgroundColor = [UIColor greenColor];
-    label.layer.borderColor = [UIColor orangeColor].CGColor;
-    label.layer.borderWidth = 1.5f;
-    //ラベルの角丸指定
-    [[label layer] setCornerRadius:8.0];
-    //ラベルのはみ出しを許可するか
-    [label setClipsToBounds:YES];
-    
-    //タッチの検知をするか
-    label.userInteractionEnabled = YES;
-    
-    // 長押し検知
-    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc]
-                                                      initWithTarget:self
-                                                      action:@selector(handleLongPressGesture:)];
-    longPressGesture.minimumPressDuration = 0.8f;
-    [label addGestureRecognizer:longPressGesture];
-
-    // ユーザデフォルトへのデータ保存
-    NSMutableDictionary *tmpDic = [NSMutableDictionary dictionary];
-    [tmpDic setDictionary:_basicData];
-    
-    [tmpDic setObject:[NSNumber numberWithFloat:label.frame.origin.x] forKey:@"x"];
-    [tmpDic setObject:[NSNumber numberWithFloat:label.frame.origin.y] forKey:@"y"];
-    [tmpDic setObject:[NSNumber numberWithFloat:size.width] forKey:@"w"];
-    [tmpDic setObject:[NSNumber numberWithFloat:size.height] forKey:@"h"];
-    [_LabelArray addObject:tmpDic];
-    [self saveToUserDefaults];
-    
-    return label;
-}
-
-// 長押し検知時
-- (void)handleLongPressGesture:(UILongPressGestureRecognizer *)sender
-{
-    if (!_Flag) {
-        
-        UITouch *touch = sender;
-        UILabel *sptchlabel = (UILabel *)[touch view];
-
-        [self loadFromUserdefaults];
-
-        NSDictionary *tmp = [[NSDictionary alloc] init];
-        tmp = [_LabelArray objectAtIndex:sptchlabel.tag-1];
-        NSString *name = [tmp objectForKey:@"name"];
-        NSInteger *num = [[tmp objectForKey:@"id"] integerValue];
-    
-        [self createlistback:name number:num];
-    
-        // リストバックビューの表示
-        [UIView beginAnimations:nil context:nil];
-        [UIView setAnimationDuration:0.3];
-        _listbackView.frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
-        [UIView commitAnimations];
-    }
-
 }
 
 // リスト作成バックビューの生成
@@ -404,7 +464,7 @@
     [_listbackView addSubview:labelname];
     
     
-    /* -------------------- テキストフォールド作成 --------------------- */
+    /* -------------------- テキストフィールド作成 --------------------- */
     _listTField = [[UITextField alloc] initWithFrame:CGRectMake(40, 60, 240, 30)];
     
     _listTField.backgroundColor = [UIColor blueColor];
@@ -430,6 +490,31 @@
 }
 
 - (void)tapReturnList:(UITextField *)listTTield{}
+
+// ラベル長押し検知時
+- (void)handleLongPressGesture:(UILongPressGestureRecognizer *)sender{
+    
+    if (!_Flag) {
+        
+        UITouch *touch = sender;
+        UILabel *sptchlabel = (UILabel *)[touch view];
+
+        [self loadFromUserdefaults];
+
+        NSDictionary *tmp = [[NSDictionary alloc] init];
+        tmp = [_LabelArray objectAtIndex:sptchlabel.tag-1];
+        NSString *name = [tmp objectForKey:@"name"];
+        NSInteger *num = [[tmp objectForKey:@"id"] integerValue];
+    
+        [self createlistback:name number:num]; //ToDoリストバックビューを作成
+    
+        /* -------------------- ToDoリストバックビューをアニメーションで表示 -------------------- */
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationDuration:0.3];
+        _listbackView.frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+        [UIView commitAnimations];
+    }
+}
 
 // リストの決定ボタン押された時
 - (void)tapdecidelistBtn:(id)sender{
@@ -466,6 +551,7 @@
     [tmp setObject:listArray forKey:@"List"]; // 配列をラベル情報に保存
     
     [_LabelArray replaceObjectAtIndex:button.tag-1 withObject:tmp];
+    NSLog(@"%@", _LabelArray);
     
     [self saveToUserDefaults];
     
@@ -540,15 +626,12 @@
             
             _previous_dt = dt;
             
+            [_labelObject_array addObject:_label];
             [_dt_array addObject:_previous_dt];
         }
     }
 }
 
-- (void)deletelabel{
-    
-    
-}
 
 // ラベルがタッチされた時
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
@@ -781,6 +864,8 @@
     NSString *name = [tmp objectForKey:@"name"];
     NSInteger num = [[tmp objectForKey:@"id"] intValue];
     
+    tmpDic = tmp.mutableCopy;
+    
     [tmpDic setObject:name forKey:@"name"];
     [tmpDic setObject:[NSNumber numberWithInt:num] forKey:@"id"];
     
@@ -799,73 +884,6 @@
     [self touchesEnded:touches withEvent:event];
 }
 
-// 全削除ボタンの作成
-- (void)createallDeleteBtn{
-    
-    // UIImage *img = [UIImage imageNamed:@""]; // イメージ読み込み
-    UIButton *AllDeleteButton = [[UIButton alloc] init]; // ボタン初期化
-    // [NewButton setBackgroundImage:img forState: UIControlStateNormal]; // ボタンに画像を設定
-    [AllDeleteButton setTitle:@"全削除" forState:UIControlStateNormal]; // ボタンに文字を設定
-    [AllDeleteButton setTitleColor:[UIColor colorWithRed:0.19215 green:0.760784 blue:0.952941 alpha:1.0] forState:UIControlStateNormal]; // 色、透明度の設定
-    AllDeleteButton.frame = CGRectMake(self.view.bounds.size.width - 70, self.view.bounds.size.height - 30, 60, 20); // フレーム設定
-    
-    [AllDeleteButton addTarget:self action:@selector(tapADBtn:)  forControlEvents:UIControlEventTouchUpInside]; // アクションを追加
-    
-    [self.view addSubview:AllDeleteButton]; // ビューへ表示
-}
-
-// 全削除ボタンのタップ時のポップアップ
-- (void)tapADBtn:(UIButton *)AllDeleteButton{
-    UIAlertView *ADalert = [[UIAlertView alloc] initWithTitle:@"全てのデータを削除しますか？"
-                                                      message:@"この作業は戻せません。"
-                                                     delegate:self
-                                            cancelButtonTitle:@"Cancel"
-                                            otherButtonTitles:@"全削除", nil];
-    [ADalert show];
-}
-
-// 全削除ポップアップのボタン選択時の動作
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    if (buttonIndex == 1) {
-        
-//        for (int i = 0; i < _LabelArray.count; i++) {
-//            if (i == _nlabel.tag || i == _label.tag) {
-//                
-//                NSLog(@"%@", _nlabel);
-//                [_label removeFromSuperview];
-//            }
-//        }
-        
-        [_LabelArray removeAllObjects];
-        NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
-        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
-        NSLog(@"%@", _LabelArray);
-    
-    }
-    else{
-        return;
-    }
-}
-
-// ユーザデフォルトに保存
-- (void)saveToUserDefaults{
-    
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSData *labelData = [NSKeyedArchiver archivedDataWithRootObject:_LabelArray];
-    [userDefaults setObject:labelData forKey:@"LABEL_KEY"];
-    [userDefaults synchronize];
-}
-
-// ユーザデフォルトから読み出し
-- (void)loadFromUserdefaults{
-    
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    _LabelArray = [[NSMutableArray alloc] init];
-    
-    NSData *labelData = [userDefaults objectForKey:@"LABEL_KEY"];
-    _LabelArray = [NSKeyedUnarchiver unarchiveObjectWithData:labelData];
-
-}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

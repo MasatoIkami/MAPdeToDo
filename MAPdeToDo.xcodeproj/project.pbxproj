@@ -20,6 +20,7 @@
 		CE84B0471A0A14C4000C7607 /* l03.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CE84B0461A0A14C4000C7607 /* l03.jpg */; };
 		CE96C3E71A1B1BBE00EA32E9 /* Horaizon.m in Sources */ = {isa = PBXBuildFile; fileRef = CE96C3E61A1B1BBE00EA32E9 /* Horaizon.m */; };
 		CEA871E31A15F7280024B76B /* DotLine.m in Sources */ = {isa = PBXBuildFile; fileRef = CEA871E21A15F7280024B76B /* DotLine.m */; };
+		CEFD6E531A3283A30071567C /* SettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEFD6E521A3283A30071567C /* SettingViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +56,8 @@
 		CE96C3E61A1B1BBE00EA32E9 /* Horaizon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Horaizon.m; path = ../Horaizon.m; sourceTree = "<group>"; };
 		CEA871E11A15F7280024B76B /* DotLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DotLine.h; sourceTree = "<group>"; };
 		CEA871E21A15F7280024B76B /* DotLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DotLine.m; sourceTree = "<group>"; };
+		CEFD6E511A3283A30071567C /* SettingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingViewController.h; sourceTree = "<group>"; };
+		CEFD6E521A3283A30071567C /* SettingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +105,8 @@
 				CE56B0FF1A089B6000766BB8 /* AppDelegate.m */,
 				CE56B1011A089B6000766BB8 /* ViewController.h */,
 				CE56B1021A089B6000766BB8 /* ViewController.m */,
+				CEFD6E511A3283A30071567C /* SettingViewController.h */,
+				CEFD6E521A3283A30071567C /* SettingViewController.m */,
 				CE2B08D81A13344C0090FF1E /* BlackStroke.h */,
 				CE2B08D91A13344C0090FF1E /* BlackStroke.m */,
 				CEA871E11A15F7280024B76B /* DotLine.h */,
@@ -257,6 +262,7 @@
 				CE56B1031A089B6000766BB8 /* ViewController.m in Sources */,
 				CE2B08DA1A13344C0090FF1E /* BlackStroke.m in Sources */,
 				CEA871E31A15F7280024B76B /* DotLine.m in Sources */,
+				CEFD6E531A3283A30071567C /* SettingViewController.m in Sources */,
 				CE56B1001A089B6000766BB8 /* AppDelegate.m in Sources */,
 				CE56B0FD1A089B6000766BB8 /* main.m in Sources */,
 				CE96C3E71A1B1BBE00EA32E9 /* Horaizon.m in Sources */,
