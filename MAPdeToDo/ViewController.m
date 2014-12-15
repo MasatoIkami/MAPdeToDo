@@ -379,7 +379,7 @@
     // 存在時はidをiに入れる
     else {
         NSDictionary *tmp = [[NSDictionary alloc] init];
-        tmp = [_LabelArray objectAtIndex:_LabelArray.count - 1];
+        tmp = [_LabelArray objectAtIndex:_LabelArray.count - 1]; // エラー箇所1
         i = [[tmp objectForKey:@"id"] intValue];
     }
     
@@ -496,6 +496,7 @@
     
     if (!_Flag) {
         
+        /* -------------------- nameとidを元にバックビューを作成 ------------------- */
         UITouch *touch = sender;
         UILabel *sptchlabel = (UILabel *)[touch view];
 
@@ -506,7 +507,7 @@
         NSString *name = [tmp objectForKey:@"name"];
         NSInteger *num = [[tmp objectForKey:@"id"] integerValue];
     
-        [self createlistback:name number:num]; //ToDoリストバックビューを作成
+        [self createlistback:name number:num];
     
         /* -------------------- ToDoリストバックビューをアニメーションで表示 -------------------- */
         [UIView beginAnimations:nil context:nil];
@@ -572,6 +573,7 @@
     if (_LabelArray != nil) {
         for (int i = 0; i < _LabelArray.count; i++){
             
+            // 必要なデータ取り出し
             NSDictionary *tmp = [[NSDictionary alloc] init];
             tmp = [_LabelArray objectAtIndex:i];
             NSString *name = [tmp objectForKey:@"name"];
@@ -581,8 +583,7 @@
             float h = [[tmp objectForKey:@"h"] floatValue];
             NSInteger num = [[tmp objectForKey:@"id"] intValue];
             
-            //NSLog(@"ラベル中身 %f, %f, %f, %f" , x,y,w,h);
-            
+            // 位置と名前付け
             _label = [[UILabel alloc] initWithFrame:CGRectMake(x, y, w, h)];
             _label.text = name;
             //ラベルのカラー指定
@@ -610,15 +611,17 @@
             [_label addGestureRecognizer:longPressGesture];
             
             _label.tag = num;
+            // 表示する
             [self.view addSubview:_label];
             [self.view bringSubviewToFront:_label];
             
-            //線を表示
+            // 線情報を取得
             float lx = [[tmp objectForKey:@"linex"] floatValue];
             float ly = [[tmp objectForKey:@"liney"] floatValue];
             float lw = [[tmp objectForKey:@"linew"] floatValue];
             float lh = [[tmp objectForKey:@"lineh"] floatValue];
             
+            // 線を表示
             DotLine *dt = [[DotLine alloc] init];
             dt.frame = CGRectMake(lx, ly, lw, lh);
             [self.view addSubview:dt];
@@ -626,6 +629,7 @@
             
             _previous_dt = dt;
             
+            // 線とラベルを配列に保存
             [_labelObject_array addObject:_label];
             [_dt_array addObject:_previous_dt];
         }
@@ -728,15 +732,18 @@
     UILabel *sptchlabel = (UILabel *)[touch view];
     
     if (sptchlabel.tag > 0){
+        // 以前の線を削除
         [_previous_bs removeFromSuperview];
         [_previous_dt removeFromSuperview];
         
         CGPoint location = [touch locationInView:self.view];
         
+        /* -------------------- 範囲外の時は位置を戻す -------------------- */
         if (location.y < 30){
             sptchlabel.center = CGPointMake(location.x, 30);
         }
         else if (location.y > 518){
+            // ゴミ箱の位置に移動した時は削除
             if ((location.x > self.view.bounds.size.width / 2 - 15) && (self.view.bounds.size.width / 2 + 15 > location.x)) {
                 [sptchlabel removeFromSuperview];
                 [_LabelArray removeObjectAtIndex:sptchlabel.tag-1];
@@ -751,9 +758,9 @@
             sptchlabel.center = CGPointMake(160, 219);
         }
         
-        else sptchlabel.center = location;
+        else sptchlabel.center = location; // 範囲内の時はその位置へ
         
-        
+        // 線表示のためのラベル位置を取得
         float x1 = sptchlabel.frame.origin.x;
         float y1 = sptchlabel.frame.origin.y;
         float w1 = sptchlabel.frame.size.width;
@@ -785,12 +792,13 @@
     [tmpDic setObject:[NSNumber numberWithFloat:width] forKey:@"w"];
     [tmpDic setObject:[NSNumber numberWithFloat:height] forKey:@"h"];
     
-    
+    // 範囲を決める
     float r1 = sqrtf((160 - (x + width / 2)) * (160 - (x + width / 2)) + (284 - (y + height / 2)) * (284 - (y + height / 2)));
     float r2 = sqrtf((160 - (x + width / 2)) * (160 - (x + width / 2)) + ((y + height / 2) - 284) * ((y + height / 2) - 284));
     float r3 = sqrtf(((x + width / 2) - 160) * ((x + width / 2) - 160) + (284 - (y + height / 2)) * (284 - (y + height / 2)));
     float r4 = sqrtf(((x + width / 2) - 160) * ((x + width / 2) - 160) + ((y + height / 2) - 284) * ((y + height / 2) - 284));
     
+    // 線を描画、そして保存
     if ( x < 160.0 ){
         if ( y < 284.0 ){ //左上
             if (r1 < 180){
@@ -868,8 +876,6 @@
     
     [tmpDic setObject:name forKey:@"name"];
     [tmpDic setObject:[NSNumber numberWithInt:num] forKey:@"id"];
-    
-    //NSLog(@"tmpdic%@", tmpDic);
     
     //tmpDicをLabelArrayに保存
     [_LabelArray replaceObjectAtIndex:savedIndex withObject:tmpDic];
