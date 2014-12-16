@@ -17,7 +17,6 @@
     UITextField *_LabelTField;
     
     NSMutableArray *_LabelArray;
-    NSDictionary *_basicData;
     
     NSString *t;
     
