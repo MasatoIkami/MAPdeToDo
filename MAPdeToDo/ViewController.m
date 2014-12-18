@@ -752,8 +752,6 @@
         [_previous_bs removeFromSuperview];
         [_previous_dt removeFromSuperview];
         
-        NSInteger tag;
-        
         CGPoint location = [touch locationInView:self.view];
         
         /* -------------------- 範囲外の時は位置を戻す -------------------- */
@@ -765,23 +763,25 @@
             if ((location.x > self.view.bounds.size.width / 2 - 15) && (self.view.bounds.size.width / 2 + 15 > location.x)) {
                 [sptchlabel removeFromSuperview];
                 
-                NSInteger NewIndex = 0;
+                NSInteger _NewIndex = 0;
                 NSInteger i;
+                
+                [self loadFromUserdefaults];
                 for (NSDictionary *tmpdic in _LabelArray) {
                     
                     i = [[tmpdic objectForKey:@"id"] integerValue];
                     if (sptchlabel.tag == i){
                         break;
+                        
                     }
                     
-                    NewIndex++;
+                    _NewIndex++;
                 }
-                
-                tag = NewIndex;
+                //tag = [self rightid:sptchlabel.tag];
 
-                [_LabelArray removeObjectAtIndex:NewIndex];
-                [_dt_array removeObjectAtIndex:NewIndex];
-                [_labelObject_array removeObjectAtIndex:NewIndex];
+                [_LabelArray removeObjectAtIndex:_NewIndex];
+                [_dt_array removeObjectAtIndex:_NewIndex];
+                [_labelObject_array removeObjectAtIndex:_NewIndex];
                 
                 NSLog(@"%@",_LabelArray);
                 [self saveToUserDefaults];
@@ -802,17 +802,51 @@
         float w1 = sptchlabel.frame.size.width;
         float h1 = sptchlabel.frame.size.height;
         
+        NSInteger _NewIndex = 0;
+        NSInteger i;
+        
+        [self loadFromUserdefaults];
+        for (NSDictionary *tmpdic in _LabelArray){
+            i = [[tmpdic objectForKey:@"id"] integerValue];
+            if (sptchlabel.tag == i){
+                break;
+            }
+            _NewIndex++;
+        }
+        
+        
         // 線の表示
-        DotLine *dt = [self writeLine:x1 y:y1 width:w1 height:h1 savedIndex:(int)tag];
+        DotLine *dt = [self writeLine:x1 y:y1 width:w1 height:h1 savedIndex:(int)_NewIndex];
         
         [self.view addSubview:dt];
         [self.view sendSubviewToBack:dt];
         
         _previous_dt = dt;
         
-        [_dt_array replaceObjectAtIndex:tag withObject:dt];
+        [_dt_array replaceObjectAtIndex:sptchlabel.tag-1 withObject:dt];
     }
 }
+
+//// 正しいidを求めるメソッド
+//- (NSInteger)rightid:(NSinteger)num{
+// 
+//    NSInteger NewIndex = 0;
+//    NSInteger i;
+//    
+//    [self loadFromUserdefaults];
+//    for (NSDictionary *tmpdic in _LabelArray) {
+//        
+//        i = [[tmpdic objectForKey:@"id"] integerValue];
+//        if (num == i){
+//            break;
+//            
+//        }
+//        
+//        NewIndex++;
+//    }
+//    
+//    return NewIndex;
+//}
 
 // 実線の作成
 - (DotLine *)writeLine:(float)x y:(float)y width:(float)width height:(float)height savedIndex:(int)savedIndex{
