@@ -7,6 +7,7 @@
 //
 
 #import "DotLine.h"
+#import "AppDelegate.h"
 
 @implementation DotLine
 
@@ -36,9 +37,11 @@
     
     CGContextSetLineWidth(context, 2.5);
     
+    // グローバル変数のカプセル化
+    AppDelegate *basic = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     
-    if ( x < 160.0 ){
-        if ( y < 284 ) {
+    if ( x < basic.basicX ){
+        if ( y < basic.basicY ) {
             
             CGContextMoveToPoint(context, 0, 0);  // 始点
             CGContextAddLineToPoint(context, w, h); // 終点
@@ -50,7 +53,7 @@
         }
     }
     else{
-        if (y < 284) {
+        if (y < basic.basicY) {
             
             CGContextMoveToPoint(context, w, 0); // 始点
             CGContextAddLineToPoint(context, 0, h); // 終点

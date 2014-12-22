@@ -17,6 +17,11 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    // 基準点の初期化
+    self.basicX = 160.0;
+    self.basicY = 286.0;
+    
     return YES;
 }
 

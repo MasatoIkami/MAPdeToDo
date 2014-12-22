@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "AppDelegate.h"
 #import "BlackStroke.h" // 点線を描くビュー
 #import "DotLine.h" // 実線を描くビュー
 #import "Horaizon.h" // 境界線を描くビュー
@@ -18,6 +19,12 @@
     
     NSMutableArray *_dt_array; // 初期に描画した線を保存する配列
     NSMutableArray *_labelObject_array; // 描画したラベルを保存する配列
+
+    DotLine *_previous_list_dt;
+    BlackStroke *_previous_list_bs;
+    
+    NSMutableArray *_listObject_array; // 描画したリストを保存する配列
+    NSMutableArray *_dt_listarray; // 初期に描画したリストの線を保存する配列
 }
 
 @end
@@ -42,6 +49,9 @@
     _dt_array = [[NSMutableArray alloc] init];
     _labelObject_array = [[NSMutableArray alloc] init];
     
+    _dt_listarray = [[NSMutableArray alloc] init];
+    _listObject_array = [[NSMutableArray alloc] init];
+    
     [self indicateLabelLine]; // 記憶したラベルと線を表示
 
     _previous_dt = nil;
@@ -54,6 +64,7 @@
     
     
     t = @"TEST"; // NSLog用変数
+    
 }
 
 // ユーザデフォルトに保存
@@ -82,7 +93,7 @@
     [self loadFromUserdefaults]; // データを読み出す
     NSLog(@"%@", _LabelArray);
     
-    if (_LabelArray != nil) {
+    if (_LabelArray.count != 0) {
         for (int i = 0; i < _LabelArray.count; i++){
             
             // 必要なデータ取り出し
@@ -93,41 +104,43 @@
             float y = [[tmp objectForKey:@"y"] floatValue];
             float w = [[tmp objectForKey:@"w"] floatValue];
             float h = [[tmp objectForKey:@"h"] floatValue];
-            NSInteger num = [[tmp objectForKey:@"id"] intValue];
+            NSInteger num = [[tmp objectForKey:@"id"] integerValue];
             
+            
+            UILabel *label;
             // 位置と名前付け
-            _label = [[UILabel alloc] initWithFrame:CGRectMake(x, y, w, h)];
-            _label.text = name;
+            label = [[UILabel alloc] initWithFrame:CGRectMake(x, y, w, h)];
+            label.text = name;
             //ラベルのカラー指定
-            _label.textColor = [UIColor whiteColor];
-            _label.shadowColor = [UIColor grayColor];
-            _label.shadowOffset = CGSizeMake(0.5, 0.5);
+            label.textColor = [UIColor whiteColor];
+            label.shadowColor = [UIColor grayColor];
+            label.shadowOffset = CGSizeMake(0.5, 0.5);
             
             //ラベルの背景色を黒に指定
-            _label.backgroundColor = [UIColor greenColor];
-            _label.layer.borderColor = [UIColor orangeColor].CGColor;
-            _label.layer.borderWidth = 1.5f;
+            label.backgroundColor = [UIColor greenColor];
+            label.layer.borderColor = [UIColor orangeColor].CGColor;
+            label.layer.borderWidth = 1.5f;
             //ラベルの角丸指定
-            [[_label layer] setCornerRadius:8.0];
+            [[label layer] setCornerRadius:8.0];
             //ラベルのはみ出しを許可するか
-            [_label setClipsToBounds:YES];
+            [label setClipsToBounds:YES];
             
             //タッチの検知をするか
-            _label.userInteractionEnabled = YES;
+            label.userInteractionEnabled = YES;
             
             // 長押し検知
             UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc]
                                                               initWithTarget:self
                                                               action:@selector(handleLongPressGesture:)];
             longPressGesture.minimumPressDuration = 0.8f;
-            [_label addGestureRecognizer:longPressGesture];
+            [label addGestureRecognizer:longPressGesture];
             
             // ラベルのid付け
-            _label.tag = num;
+            label.tag = num;
             
             // 表示する
-            [self.view addSubview:_label];
-            [self.view bringSubviewToFront:_label];
+            [self.view addSubview:label];
+            [self.view bringSubviewToFront:label];
             
             // 線情報を取得
             float lx = [[tmp objectForKey:@"linex"] floatValue];
@@ -143,11 +156,97 @@
             
             _previous_dt = dt;
             
-            // 線とラベルを配列に保存
-            [_labelObject_array addObject:_label];
+            // 線とラベルを配列に保存(_LabelArrayのインデックス順)
+            [_labelObject_array addObject:label];
             [_dt_array addObject:_previous_dt];
+            
+            NSArray *Atmp = [[NSArray alloc] init];
+            Atmp = [tmp objectForKey:@"List"];
+            
+            for(int li = 0; li < Atmp.count; li++){
+                
+                NSDictionary *Dtmp = [[NSDictionary alloc] init];
+                Dtmp = [Atmp objectAtIndex:li];
+                
+                NSString *listname = [Dtmp objectForKey:@"name"];
+                float listx = [[Dtmp objectForKey:@"x"] floatValue];
+                float listy = [[Dtmp objectForKey:@"y"] floatValue];
+                float listw = [[Dtmp objectForKey:@"w"] floatValue];
+                float listh = [[Dtmp objectForKey:@"h"] floatValue];
+                NSInteger listnum = [[Dtmp objectForKey:@"id"] integerValue];
+                
+                UILabel *list = [[UILabel alloc] initWithFrame:CGRectMake(listx, listy, listw, listh)];
+                list.text = listname;
+                list.tag = listnum;
+                
+                //ラベルのカラー指定
+                list.textColor = [UIColor grayColor];
+                list.shadowColor = [UIColor grayColor];
+                list.shadowOffset = CGSizeMake(0.5, 0.5);
+                
+                //ラベルの背景色を黒に指定
+                list.backgroundColor = [UIColor yellowColor];
+                list.layer.borderColor = [UIColor orangeColor].CGColor;
+                list.layer.borderWidth = 1.5f;
+                //ラベルの角丸指定
+                [[list layer] setCornerRadius:8.0];
+                //ラベルのはみ出しを許可するか
+                [list setClipsToBounds:YES];
+                
+                //タッチの検知をするか
+                list.userInteractionEnabled = YES;
+                
+                // 長押し検知
+                UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc]
+                                                                  initWithTarget:self
+                                                                  action:@selector(handleLongPressGesture:)];
+                longPressGesture.minimumPressDuration = 0.8f;
+                [list addGestureRecognizer:longPressGesture];
+                
+                // 表示する
+                [self.view addSubview:list];
+                [self.view bringSubviewToFront:list];
+                
+                // リスト線の描画
+                float llx = [[Dtmp objectForKey:@"linex"] floatValue];
+                float lly = [[Dtmp objectForKey:@"liney"] floatValue];
+                float llw = [[Dtmp objectForKey:@"linew"] floatValue];
+                float llh = [[Dtmp objectForKey:@"lineh"] floatValue];
+                
+                AppDelegate *basic = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                basic.basicX = x + w / 2;
+                basic.basicY = y + h / 2;
+                
+                DotLine *dt = [[DotLine alloc] init];
+                dt.frame = CGRectMake(llx, lly, llw, llh);
+                
+                [self.view addSubview:dt];
+                [self.view sendSubviewToBack:dt];
+                
+                _previous_list_dt = dt;
+                
+                [_listObject_array addObject:list];
+                [_dt_listarray addObject:_previous_list_dt];
+            }
         }
     }
+}
+
+// インデックス計算用メソッド
+- (NSInteger)calcNewIndex:(UILabel *)checkLabel{
+    
+    NSInteger NewIndex = 0;
+    NSInteger i;
+    
+    for (NSDictionary *tmpdic in _LabelArray){
+        
+        i = [[tmpdic objectForKey:@"id"] integerValue];
+        if (checkLabel.tag == i)
+            break;
+        NewIndex++;
+        
+    }
+    return NewIndex;
 }
 
 // 上下境界線の設定
@@ -257,17 +356,27 @@
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     if (buttonIndex == 1) {
         
-        // ラベルの削除
+        // ラベル(実体)の削除(ラベル配列から1つずつ取り出して削除している。)
         for (UILabel *tmpLabel in _labelObject_array) {
             [tmpLabel removeFromSuperview];
         }
         
-        // 線の削除
+        // ラベル線(実体)の削除(線配列から1つずつ取り出して削除している。)
         for (DotLine *tmpLine in _dt_array) {
             [tmpLine removeFromSuperview];
         }
         
-        // データの削除
+        // リスト(実体)の削除
+        for (UILabel *tmpLabel in _listObject_array){
+            [tmpLabel removeFromSuperview];
+        }
+        
+        // リスト線の削除
+        for (DotLine *tmpLine in _dt_listarray){
+            [tmpLine removeFromSuperview];
+        }
+        
+        // 全データの削除
         NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
         [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
         NSLog(@"%@", _LabelArray);
@@ -431,7 +540,7 @@
     [Mtmp setObject:[NSNumber numberWithFloat:size.width] forKey:@"w"];
     [Mtmp setObject:[NSNumber numberWithFloat:size.height] forKey:@"h"];
     [_LabelArray replaceObjectAtIndex:_LabelArray.count-1 withObject:Mtmp];
-    NSLog(@"%@", Mtmp);
+
     [self saveToUserDefaults];
     
     return label;
@@ -446,14 +555,14 @@
     NSInteger i; // ラベルidカウント用変数
     
     // 全削除ボタン押した時iと配列の初期化
-    if (_LabelArray == nil) {
+    if (_LabelArray.count == 0) {
         i = 0;
         _LabelArray = [[NSMutableArray alloc] init];
     }
-    // 存在時はidをiに入れる
+    // 存在時は1つ前のidをiに入れる
     else {
         NSDictionary *tmpid = [[NSDictionary alloc] init];
-        tmpid = [_LabelArray objectAtIndex:_LabelArray.count - 1];
+        tmpid = [_LabelArray objectAtIndex:_LabelArray.count-1];
         i = [[tmpid objectForKey:@"id"] intValue];
     }
     
@@ -469,11 +578,11 @@
     [_LabelArray addObject:tmp];
     [self saveToUserDefaults];
 
-    _nlabel = [self createLabel:_LabelTField.text]; // ラベル作成
-    _nlabel.tag = i;
-    [_labelObject_array addObject:_nlabel]; // ラベル用配列に格納
-    [self.view addSubview:_nlabel]; // 画面に表示
-    [self.view bringSubviewToFront:_nlabel];
+    UILabel *label = [self createLabel:_LabelTField.text]; // ラベル作成
+    label.tag = i;
+    [_labelObject_array addObject:label]; // ラベル用配列に格納
+    [self.view addSubview:label]; // 画面に表示
+    [self.view bringSubviewToFront:label];
     
     //確認用
     [self loadFromUserdefaults];
@@ -496,7 +605,7 @@
 }
 
 // リスト作成バックビューの生成
-- (void)createlistback:(NSString *)name number:(int *)num{
+- (void)createlistback:(NSString *)name number:(int)num{
     
     /* -------------------- バックビューの作成 -------------------- */
     _listbackView = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, self.view.bounds.size.height)];
@@ -577,11 +686,13 @@
         [self loadFromUserdefaults];
 
         NSDictionary *tmp = [[NSDictionary alloc] init];
-        tmp = [_LabelArray objectAtIndex:sptchlabel.tag-1];
+        
+        tmp = [_LabelArray objectAtIndex:[self calcNewIndex:sptchlabel]];
         NSString *name = [tmp objectForKey:@"name"];
         int num = [[tmp objectForKey:@"id"] intValue];
     
-        [self createlistback:name number:&num];
+        [self createlistback:name number:num];
+        NSLog(@"taped:%@", tmp);
     
         /* -------------------- ToDoリストバックビューをアニメーションで表示 -------------------- */
         [UIView beginAnimations:nil context:nil];
@@ -591,29 +702,117 @@
     }
 }
 
+// リスト作成メソッド
+- (UILabel *)createList:(NSString *)name labelid:(NSInteger)labelid labelx:(float)lx labely:(float)ly listid:(NSInteger)listid{
+ 
+    /* -------------------- 新規リストの作成 -------------------- */
+    UILabel *list = [[UILabel alloc] init]; // 初期化
+    
+    list.center = CGPointMake(lx + 10, ly + 10); // 位置
+    list.text = name; // リスト名
+    CGSize bounds = CGSizeMake(list.frame.size.width, 200);
+    UIFont *font = list.font;
+    UILineBreakMode mode = list.lineBreakMode;
+    CGSize size;
+    if ([NSString instancesRespondToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
+        CGRect rect
+        = [list.text boundingRectWithSize:bounds
+                                   options:NSStringDrawingUsesLineFragmentOrigin
+                                attributes:@{NSFontAttributeName:font}
+                                   context:nil];
+        size = rect.size;
+    }
+    else {
+        CGSize size = [list.text sizeWithFont:font
+                             constrainedToSize:bounds
+                                 lineBreakMode:mode];
+    }
+    size.width  = ceilf(size.width);
+    size.height = ceilf(size.height);
+    NSLog(@"size: %@", NSStringFromCGSize(size));
+    
+    // 位置や大きさを再設定
+    list.frame = CGRectMake(list.frame.origin.x,
+                             list.frame.origin.y,
+                             size.width, size.height);
+    
+    //ラベルのカラー指定
+    list.textColor = [UIColor grayColor];
+    list.shadowColor = [UIColor blackColor];
+    list.shadowOffset = CGSizeMake(0.5, 0.5);
+    //ラベルの背景色を黒に指定
+    list.backgroundColor = [UIColor yellowColor];
+    list.layer.borderColor = [UIColor orangeColor].CGColor;
+    list.layer.borderWidth = 1.5f;
+    //ラベルの角丸指定
+    [[list layer] setCornerRadius:8.0];
+    //ラベルのはみ出しを許可するか
+    [list setClipsToBounds:YES];
+    
+    
+    /* -------------------- タッチ検出機能の追加 -------------------- */
+    //タッチの検知をするか
+    list.userInteractionEnabled = YES;
+    // 長押し検知
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc]
+                                                      initWithTarget:self
+                                                      action:@selector(handleLongPressGesture:)];
+    longPressGesture.minimumPressDuration = 0.8f;
+    [list addGestureRecognizer:longPressGesture];
+
+    
+    /* -------------------- ユーザデフォルトへラベルデータ(名前、id、位置、大きさ)保存 -------------------- */
+    [self loadFromUserdefaults];
+//    NSDictionary *tmp = [[NSDictionary alloc] init];
+//    NSMutableDictionary *Mtmp = [NSMutableDictionary dictionary]; // 配列の初期化
+    NSMutableDictionary *Mtmp = [_LabelArray objectAtIndex:labelid-1];
+    NSMutableArray *listArray = [Mtmp objectForKey:@"List"];
+    NSMutableDictionary *MMtmp = [listArray objectAtIndex:listid-10001];
+    
+    
+    // 位置と大きさをセット
+    [MMtmp setObject:[NSNumber numberWithFloat:list.frame.origin.x] forKey:@"x"];
+    [MMtmp setObject:[NSNumber numberWithFloat:list.frame.origin.y] forKey:@"y"];
+    [MMtmp setObject:[NSNumber numberWithFloat:size.width] forKey:@"w"];
+    [MMtmp setObject:[NSNumber numberWithFloat:size.height] forKey:@"h"];
+    
+    [listArray replaceObjectAtIndex:listid-10001 withObject:MMtmp];
+    [Mtmp setObject:listArray forKey:@"List"];
+    [_LabelArray replaceObjectAtIndex:labelid-1 withObject:Mtmp];
+    
+    [self saveToUserDefaults];
+    
+    return list;
+    
+}
+
 // リストの決定ボタン押された時
 - (void)tapdecidelistBtn:(id)sender{
     
     UIButton *button = (UIButton *)sender;
     NSInteger i;
+    NSInteger buttonTag = button.tag;
+    
     
     [self loadFromUserdefaults];
     NSDictionary *tmp = [[NSDictionary alloc] init];
     NSMutableDictionary *Mtmp = [[NSMutableDictionary alloc] init]; // 移す用のディクショナリ
-    tmp = [_LabelArray objectAtIndex:button.tag-1];
+    tmp = [_LabelArray objectAtIndex:buttonTag-1];
     Mtmp = tmp.mutableCopy;
-    // そもそもラベルアレイにlistが保存されていない
+
     float labelx = [[Mtmp objectForKey:@"x"] floatValue]; // ラベルのxを読み出し
     float labely = [[Mtmp objectForKey:@"y"] floatValue]; // ラベルのyを読み出し
-    //NSLog(@"%f, %f", labelx,labely);
+    
     NSMutableArray *listArray = [tmp objectForKey:@"List"]; // あればラベルのリスト配列を読みだし
-    //NSLog(@"%@",listArray);
+    NSLog(@"%@",listArray);
     if (listArray == nil) {
         listArray = [[NSMutableArray alloc] init]; // リスト用の配列作成
-        i = 0;
+        i = 10000;
     }
     else{
-        i = listArray.count;
+        NSDictionary *tmpdic = [[NSDictionary alloc] init];
+        tmpdic = [listArray objectAtIndex:listArray.count-1];
+        i = [[tmpdic objectForKey:@"id"] integerValue];
     }
     
     i++;
@@ -622,17 +821,31 @@
     [tmplist setObject:_listTField.text forKey:@"name"];
     [tmplist setObject:[NSNumber numberWithInteger:i] forKey:@"id"];
     [tmplist setObject:_listDetail.text forKey:@"detail"];
+    [tmplist setObject:[NSNumber numberWithInteger:buttonTag] forKey:@"labelid"];
     
     [listArray addObject:tmplist]; // リスト情報を配列に保存
     
     [Mtmp setObject:listArray forKey:@"List"]; // 配列をラベル情報に保存
     
-    [_LabelArray replaceObjectAtIndex:button.tag-1 withObject:Mtmp];
+    [_LabelArray replaceObjectAtIndex:buttonTag-1 withObject:Mtmp];
     NSLog(@"%@", _LabelArray);
     
     [self saveToUserDefaults];
     
+    UILabel *list = [self createList:_listTField.text labelid:buttonTag labelx:labelx labely:labely listid:i]; // リスト作成
+    list.tag = i;
+    [_listObject_array addObject:list]; // リスト用配列に格納
+    [self.view addSubview:list]; // 画面に表示
+    [self.view bringSubviewToFront:list];
     
+    
+    /* -------------------- 線配列の初期化 -------------------- */
+    _previous_list_dt = nil;
+    
+    // ダミーの線情報を入れておく
+    DotLine *dt = [[DotLine alloc] init];
+    dt.frame = CGRectMake(0, 0, 0, 0);
+    [_dt_listarray addObject:dt];
     
     // バックビューを閉じる
     [UIView beginAnimations:nil context:nil];
@@ -650,40 +863,49 @@
     UILabel *sptchlabel = (UILabel *)[touch view];
     
     if (sptchlabel.tag > 0){
-        [self loadFromUserdefaults];
-     
-        CGPoint location = [touch locationInView:self.view];
-        sptchlabel.center = location;
         
-        float x = sptchlabel.frame.origin.x;
-        float y = sptchlabel.frame.origin.y;
-        float w = sptchlabel.frame.size.width;
-        float h = sptchlabel.frame.size.height;
+        if (sptchlabel.tag > 10000){
         
-        // 線の表示
-        DotLine *dt = [[DotLine alloc] init];
-        dt.frame = CGRectMake(x, y, w, h);
-        
-        // dtを今から変更が加わる線として保存
-        _previous_dt = dt;
-        
-        
-        NSInteger NewIndex = 0;
-        NSInteger i;
-        for (NSDictionary *tmpdic in _LabelArray) {
+            [self loadFromUserdefaults];
             
-            i = [[tmpdic objectForKey:@"id"] integerValue];
-            if (sptchlabel.tag == i){
-                break;
-            }
+            CGPoint location = [touch locationInView:self.view];
+            sptchlabel.center = location;
             
-            NewIndex++;
+            float x = sptchlabel.frame.origin.x;
+            float y = sptchlabel.frame.origin.y;
+            float w = sptchlabel.frame.size.width;
+            float h = sptchlabel.frame.size.height;
+            
+            // 線の表示
+            DotLine *dt = [[DotLine alloc] init];
+            dt.frame = CGRectMake(x, y, w, h);
+        
+            // リストがタップされた時
+            _previous_list_dt = dt;
+            [_dt_listarray[sptchlabel.tag-10001] removeFromSuperview];
         }
-        // 最初に描画した線を削除
-        [_dt_array[NewIndex] removeFromSuperview];
-        
+        // ラベルがタップされた時
+        else {
+            
+            [self loadFromUserdefaults];
+            
+            CGPoint location = [touch locationInView:self.view];
+            sptchlabel.center = location;
+            
+            float x = sptchlabel.frame.origin.x;
+            float y = sptchlabel.frame.origin.y;
+            float w = sptchlabel.frame.size.width;
+            float h = sptchlabel.frame.size.height;
+            
+            // 線の表示
+            DotLine *dt = [[DotLine alloc] init];
+            dt.frame = CGRectMake(x, y, w, h);
+            // dtを今から変更が加わる線として保存
+            _previous_dt = dt;
+            // 最初に描画した線を削除
+            [_dt_array[[self calcNewIndex:sptchlabel]] removeFromSuperview];
+        }
     }
-    
 }
 
 // ラベルが動かされた時 位置情報を取得しつつ点線を表示
@@ -692,51 +914,131 @@
     UITouch *touch = [[event allTouches] anyObject];
     UILabel *sptchlabel = (UILabel *)[touch view];
     if (sptchlabel.tag > 0){
-    
-        [_previous_bs removeFromSuperview];
         
-        CGPoint location = [touch locationInView:self.view];
-        sptchlabel.center = location;
-        
-        float x1 = sptchlabel.frame.origin.x;
-        float y1 = sptchlabel.frame.origin.y;
-        float w1 = sptchlabel.frame.size.width;
-        float h1 = sptchlabel.frame.size.height;
-        
-        BlackStroke *bs = [[BlackStroke alloc] init];
-        float r1 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
-        float r2 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
-        float r3 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
-        float r4 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
-        
-        if ( x1 < 160.0 ){
-            if ( y1 < 284.0 ){ //左上
+        if (sptchlabel.tag > 10000) {
+            [_previous_list_bs removeFromSuperview];
+            
+            CGPoint location = [touch locationInView:self.view];
+            sptchlabel.center = location;
+            
+            // タッチされたリストの位置情報を取得
+            float x1 = sptchlabel.frame.origin.x;
+            float y1 = sptchlabel.frame.origin.y;
+            float w1 = sptchlabel.frame.size.width;
+            float h1 = sptchlabel.frame.size.width;
+            
+            NSDictionary *list = [[NSDictionary alloc] init];
+            NSInteger listid;
+            NSInteger answer;
+
+            [self loadFromUserdefaults];
+            // リストの元となるラベルの位置情報を取得
+            for (NSDictionary *tmp in _LabelArray) {
                 
-                if (r1 < 180)
-                    bs.frame = CGRectMake(x1 + w1 / 2, y1 + h1 / 2, 160 - (x1 + w1 / 2), 284 - (y1 + h1 / 2));
+                list = [tmp objectForKey:@"List"];
+                
+                for (NSDictionary *ttmp in list){
+                    
+                    listid = [[ttmp objectForKey:@"id"] integerValue];
+                
+                    if (sptchlabel.tag == listid) { //ラベルidを取得
+                        
+                        answer = [[ttmp objectForKey:@"labelid"] integerValue];
+                        break;
+                    }
+                }
             }
-            else{ // 左下
-                if (r2 < 180)
-                    bs.frame = CGRectMake(x1 + w1 / 2, 284, 160 - (x1 + w1 / 2), (y1 + h1 / 2) - 284);
+            
+            NSDictionary *tmp = [[NSDictionary alloc] init];
+            tmp = [_LabelArray objectAtIndex:answer-1];
+            float lx = [[tmp objectForKey:@"x"] floatValue];
+            float ly = [[tmp objectForKey:@"y"] floatValue];
+            float lw = [[tmp objectForKey:@"w"] floatValue];
+            float lh = [[tmp objectForKey:@"h"] floatValue];
+            
+            
+            // グローバル変数を入れる
+            AppDelegate *basic = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            basic.basicX = lx + lw / 2;
+            basic.basicY = ly + lh / 2;
+
+            BlackStroke *bs = [[BlackStroke alloc] init];
+            
+            if ((x1 + w1 / 2) < (lx + lw / 2)) {
+                if ((y1 + h1 / 2) < (ly + lh / 2)){ // ラベルの左上
+                    bs.frame = CGRectMake(x1 + w1 / 2, y1 + h1 / 2, (lx + lw / 2) - (x1 + w1 / 2), (ly + lh / 2) - (y1 + h1 / 2));
+                }
+                else{ // ラベルの左下
+                    bs.frame = CGRectMake(x1 + w1 / 2, ly + lh / 2, (lx + lw / 2) - (x1 + w1 / 2), (y1 + h1 / 2) - (ly + lh / 2));
+                }
             }
+            else{
+                if ((y1 + h1 / 2) < (ly + lh / 2)){ // ラベルの右上
+                    bs.frame = CGRectMake(lx + lw / 2, y1 + h1 / 2, (x1 + w1 / 2) - (lx + lw / 2), (ly + lh / 2) - (y1 + h1 / 2));
+                }
+                else{ // ラベルの右下
+                    bs.frame = CGRectMake(lx + lw / 2, ly + lh / 2, (x1 + w1 / 2) - (lx + lw / 2), (y1 + h1 / 2) - (ly + lh / 2));
+                }
+            }
+            
+            [self.view addSubview:bs];
+            [self.view sendSubviewToBack:bs];
+            
+            _previous_list_bs = bs;
+            
         }
+        
         else{
-            if ( y1 < 284.0 ){ // 右上
-                
-                if (r3 < 180)
-                    bs.frame = CGRectMake(160, y1 + h1 / 2, (x1 + w1 / 2) - 160, 284 - (y1 + h1 / 2));
+            [_previous_bs removeFromSuperview];
+            
+            CGPoint location = [touch locationInView:self.view];
+            sptchlabel.center = location;
+            
+            float x1 = sptchlabel.frame.origin.x;
+            float y1 = sptchlabel.frame.origin.y;
+            float w1 = sptchlabel.frame.size.width;
+            float h1 = sptchlabel.frame.size.height;
+            
+            // グローバル変数を入れる
+            AppDelegate *basic = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            basic.basicX = 160.0;
+            basic.basicY = 268.0;
+            
+            BlackStroke *bs = [[BlackStroke alloc] init];
+            float r1 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
+            float r2 = sqrtf((160 - (x1 + w1 / 2)) * (160 - (x1 + w1 / 2)) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
+            float r3 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + (284 - (y1 + h1 / 2)) * (284 - (y1 + h1 / 2)));
+            float r4 = sqrtf(((x1 + w1 / 2) - 160) * ((x1 + w1 / 2) - 160) + ((y1 + h1 / 2) - 284) * ((y1 + h1 / 2) - 284));
+            
+            if ( x1 < 160.0 ){
+                if ( y1 < 284.0 ){ //左上
+                    
+                    if (r1 < 180)
+                        bs.frame = CGRectMake(x1 + w1 / 2, y1 + h1 / 2, 160 - (x1 + w1 / 2), 284 - (y1 + h1 / 2));
+                }
+                else{ // 左下
+                    if (r2 < 180)
+                        bs.frame = CGRectMake(x1 + w1 / 2, 284, 160 - (x1 + w1 / 2), (y1 + h1 / 2) - 284);
+                }
             }
-            else{ // 右下
-                
-                if (r4 < 180)
-                    bs.frame = CGRectMake(160, 284, (x1 + w1 / 2) - 160, (y1 + h1 / 2) - 284);
+            else{
+                if ( y1 < 284.0 ){ // 右上
+                    
+                    if (r3 < 180)
+                        bs.frame = CGRectMake(160, y1 + h1 / 2, (x1 + w1 / 2) - 160, 284 - (y1 + h1 / 2));
+                }
+                else{ // 右下
+                    
+                    if (r4 < 180)
+                        bs.frame = CGRectMake(160, 284, (x1 + w1 / 2) - 160, (y1 + h1 / 2) - 284);
+                }
             }
+            
+            [self.view addSubview:bs];
+            [self.view sendSubviewToBack:bs];
+            
+            _previous_bs = bs;
         }
-        
-        [self.view addSubview:bs];
-        [self.view sendSubviewToBack:bs];
-        
-        _previous_bs = bs;
 
     }
 }
@@ -748,109 +1050,172 @@
     UILabel *sptchlabel = (UILabel *)[touch view];
     
     if (sptchlabel.tag > 0){
-        // 以前の線を削除
-        [_previous_bs removeFromSuperview];
-        [_previous_dt removeFromSuperview];
-        
-        CGPoint location = [touch locationInView:self.view];
-        
-        /* -------------------- 範囲外の時は位置を戻す -------------------- */
-        if (location.y < 30){
-            sptchlabel.center = CGPointMake(location.x, 30);
-        }
-        else if (location.y > 518){
-            // ゴミ箱の位置に移動した時は削除
-            if ((location.x > self.view.bounds.size.width / 2 - 15) && (self.view.bounds.size.width / 2 + 15 > location.x)) {
-                [sptchlabel removeFromSuperview];
-                
-                NSInteger _NewIndex = 0;
-                NSInteger i;
-                
-                [self loadFromUserdefaults];
-                for (NSDictionary *tmpdic in _LabelArray) {
+        if (sptchlabel.tag > 10000){
+            // 以前の線を削除
+            [_previous_list_bs removeFromSuperview];
+            [_previous_list_dt removeFromSuperview];
+            
+            CGPoint location = [touch locationInView:self.view];
+            
+            /* -------------------- 範囲外の時は位置を戻す -------------------- */
+            if (location.y < 30){
+                sptchlabel.center = CGPointMake(location.x, 30);
+            }
+            else if (location.y > 518){
+                // ゴミ箱の位置に移動した時は削除
+                if ((location.x > self.view.bounds.size.width / 2 - 15) && (self.view.bounds.size.width / 2 + 15 > location.x)) {
                     
-                    i = [[tmpdic objectForKey:@"id"] integerValue];
-                    if (sptchlabel.tag == i){
-                        break;
-                        
+                    [self loadFromUserdefaults];
+                    NSDictionary *list = [[NSDictionary alloc] init];
+                    NSInteger listid;
+                    NSInteger answer;
+                    
+                    for (NSDictionary *tmp in _LabelArray){
+                        list = [tmp objectForKey:@"List"];
+                        for (NSDictionary *ttmp in list){
+                            listid = [[ttmp objectForKey:@"id"] integerValue];
+                            if (sptchlabel.tag == listid) {
+                                answer = [[ttmp objectForKey:@"labelid"] integerValue];
+                                break;
+                            }
+                        }
                     }
+                    NSMutableDictionary *Mtmp = [NSMutableDictionary dictionary];
+                    Mtmp = [_LabelArray objectAtIndex:answer-1];
+                    NSMutableArray *Atmp = [[NSMutableArray alloc] init];
+                    Atmp = [Mtmp objectForKey:@"List"];
+                    NSMutableDictionary *MMtmp = [NSMutableDictionary dictionary];
+                    MMtmp = [Atmp objectAtIndex:sptchlabel.tag-10001];
+                                                 
+                    [Atmp removeObjectAtIndex:sptchlabel.tag-10001];
+                    [Mtmp setObject:Atmp forKey:@"List"];
+                    [_LabelArray replaceObjectAtIndex:answer-1 withObject:Mtmp];
                     
-                    _NewIndex++;
+                    [_dt_listarray removeObjectAtIndex:listid-1];
+                    [_listObject_array removeObjectAtIndex:listid-1];
+                    
+                    [sptchlabel removeFromSuperview];
+                    
+                    NSLog(@"%@",_LabelArray);
+                    [self saveToUserDefaults];
+                    return;
                 }
-                //tag = [self rightid:sptchlabel.tag];
-
-                [_LabelArray removeObjectAtIndex:_NewIndex];
-                [_dt_array removeObjectAtIndex:_NewIndex];
-                [_labelObject_array removeObjectAtIndex:_NewIndex];
+                sptchlabel.center = CGPointMake(location.x, 518);
+            }
+            
+            else if (location.x > 125 && 195 > location.x && location.y > 249 && 319 > location.y){
+                sptchlabel.center = CGPointMake(160, 219);
+            }
+            
+            else sptchlabel.center = location; // 範囲内の時はその位置へ
+            
+            // 線表示のためのリスト位置を取得
+            float x1 = sptchlabel.frame.origin.x;
+            float y1 = sptchlabel.frame.origin.y;
+            float w1 = sptchlabel.frame.size.width;
+            float h1 = sptchlabel.frame.size.height;
+            
+            NSDictionary *list = [[NSDictionary alloc] init];
+            NSInteger listid;
+            NSInteger answer;
+            
+            [self loadFromUserdefaults];
+            // リストの元となるラベルの位置情報を取得
+            for (NSDictionary *tmp in _LabelArray) {
                 
-                NSLog(@"%@",_LabelArray);
-                [self saveToUserDefaults];
-                return;
+                list = [tmp objectForKey:@"List"];
+                
+                for (NSDictionary *ttmp in list){
+                    
+                    listid = [[ttmp objectForKey:@"id"] integerValue];
+                    
+                    if (sptchlabel.tag == listid) { //ラベルidを取得
+                        
+                        answer = [[ttmp objectForKey:@"labelid"] integerValue];
+                        break;
+                    }
+                }
             }
-            sptchlabel.center = CGPointMake(location.x, 518);
+            
+            NSDictionary *tmp = [[NSDictionary alloc] init];
+            tmp = [_LabelArray objectAtIndex:answer-1];
+            float lx = [[tmp objectForKey:@"x"] floatValue];
+            float ly = [[tmp objectForKey:@"y"] floatValue];
+            float lw = [[tmp objectForKey:@"w"] floatValue];
+            float lh = [[tmp objectForKey:@"h"] floatValue];
+            
+            // 線の表示
+            DotLine *dt = [self writeListLine:x1 y:y1 width:w1 height:h1 savedlistId:sptchlabel.tag savedId:answer labelx:lx labely:ly labelw:lw labelh:lh];
+            
+            [self.view addSubview:dt];
+            [self.view sendSubviewToBack:dt];
+            
+            _previous_list_dt = dt;
+            
+            [_dt_listarray replaceObjectAtIndex:sptchlabel.tag-10001 withObject:dt];
         }
-        
-        else if (location.x > 125 && 195 > location.x && location.y > 249 && 319 > location.y){
-            sptchlabel.center = CGPointMake(160, 219);
-        }
-        
-        else sptchlabel.center = location; // 範囲内の時はその位置へ
-        
-        // 線表示のためのラベル位置を取得
-        float x1 = sptchlabel.frame.origin.x;
-        float y1 = sptchlabel.frame.origin.y;
-        float w1 = sptchlabel.frame.size.width;
-        float h1 = sptchlabel.frame.size.height;
-        
-        NSInteger _NewIndex = 0;
-        NSInteger i;
-        
-        [self loadFromUserdefaults];
-        for (NSDictionary *tmpdic in _LabelArray){
-            i = [[tmpdic objectForKey:@"id"] integerValue];
-            if (sptchlabel.tag == i){
-                break;
+        else{
+            // 以前の線を削除
+            [_previous_bs removeFromSuperview];
+            [_previous_dt removeFromSuperview];
+            
+            CGPoint location = [touch locationInView:self.view];
+            
+            /* -------------------- 範囲外の時は位置を戻す -------------------- */
+            if (location.y < 30){
+                sptchlabel.center = CGPointMake(location.x, 30);
             }
-            _NewIndex++;
+            else if (location.y > 518){
+                // ゴミ箱の位置に移動した時は削除
+                if ((location.x > self.view.bounds.size.width / 2 - 15) && (self.view.bounds.size.width / 2 + 15 > location.x)) {
+                    
+                    [_LabelArray removeObjectAtIndex:[self calcNewIndex:sptchlabel]];
+                    [_dt_array removeObjectAtIndex:[self calcNewIndex:sptchlabel]];
+                    [_labelObject_array removeObjectAtIndex:[self calcNewIndex:sptchlabel]];
+                    
+                    [sptchlabel removeFromSuperview];
+                    
+                    NSLog(@"%@",_LabelArray);
+                    [self saveToUserDefaults];
+                    return;
+                }
+                sptchlabel.center = CGPointMake(location.x, 518);
+            }
+            
+            else if (location.x > 125 && 195 > location.x && location.y > 249 && 319 > location.y){
+                sptchlabel.center = CGPointMake(160, 219);
+            }
+            
+            else sptchlabel.center = location; // 範囲内の時はその位置へ
+            
+            // 線表示のためのラベル位置を取得
+            float x1 = sptchlabel.frame.origin.x;
+            float y1 = sptchlabel.frame.origin.y;
+            float w1 = sptchlabel.frame.size.width;
+            float h1 = sptchlabel.frame.size.height;
+            
+            // 線の表示
+            DotLine *dt = [self writeLine:x1 y:y1 width:w1 height:h1 savedIndex:(int)[self calcNewIndex:sptchlabel]];
+            
+            [self.view addSubview:dt];
+            [self.view sendSubviewToBack:dt];
+            
+            _previous_dt = dt;
+            
+            [_dt_array replaceObjectAtIndex:[self calcNewIndex:sptchlabel] withObject:dt];
+
         }
-        
-        
-        // 線の表示
-        DotLine *dt = [self writeLine:x1 y:y1 width:w1 height:h1 savedIndex:(int)_NewIndex];
-        
-        [self.view addSubview:dt];
-        [self.view sendSubviewToBack:dt];
-        
-        _previous_dt = dt;
-        
-        [_dt_array replaceObjectAtIndex:sptchlabel.tag-1 withObject:dt];
     }
 }
 
-//// 正しいidを求めるメソッド
-//- (NSInteger)rightid:(NSinteger)num{
-// 
-//    NSInteger NewIndex = 0;
-//    NSInteger i;
-//    
-//    [self loadFromUserdefaults];
-//    for (NSDictionary *tmpdic in _LabelArray) {
-//        
-//        i = [[tmpdic objectForKey:@"id"] integerValue];
-//        if (num == i){
-//            break;
-//            
-//        }
-//        
-//        NewIndex++;
-//    }
-//    
-//    return NewIndex;
-//}
-
-// 実線の作成
+// 実線の作成(ラベル)
 - (DotLine *)writeLine:(float)x y:(float)y width:(float)width height:(float)height savedIndex:(int)savedIndex{
     
+    // グローバル変数を入れる
+    AppDelegate *basic = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    basic.basicX = 160.0;
+    basic.basicY = 268.0;
+
     DotLine *dt = [[DotLine alloc] init];
     
     // ユーザデフォルトへのデータ保存
@@ -947,6 +1312,107 @@
     return dt;
 }
 
+// 実線の作成(リスト)
+- (DotLine *)writeListLine:(float)x y:(float)y width:(float)width height:(float)height savedlistId:(int)savedlistId savedId:(int)savedId labelx:(float)labelx labely:(float)labely labelw:(float)labelw labelh:(float)labelh{
+    
+    // グローバル変数を入れる
+    AppDelegate *basic = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    basic.basicX = labelx + labelw / 2;
+    basic.basicY = labely + labelh / 2;
+
+    DotLine *dt = [[DotLine alloc] init];
+    
+    // ユーザデフォルトへのデータ保存
+    [self loadFromUserdefaults];
+    NSMutableDictionary *Mtmp = [NSMutableDictionary dictionary];
+    NSDictionary *tmp = [[NSDictionary alloc] init];
+    
+    tmp = [_LabelArray objectAtIndex:savedId-1];
+    Mtmp = tmp.mutableCopy;
+    
+    NSMutableArray *Atmp = [[NSMutableArray alloc] init];
+    Atmp = [Mtmp objectForKey:@"List"];
+    
+    NSMutableDictionary *MMtmp = [NSMutableDictionary dictionary];
+    MMtmp = [Atmp objectAtIndex:savedlistId-10001];
+    
+    [MMtmp setObject:[NSNumber numberWithFloat:x] forKey:@"x"];
+    [MMtmp setObject:[NSNumber numberWithFloat:y] forKey:@"y"];
+    [MMtmp setObject:[NSNumber numberWithFloat:width] forKey:@"w"];
+    [MMtmp setObject:[NSNumber numberWithFloat:height] forKey:@"h"];
+    
+    // 線を描画、そして保存
+    if ((x + width / 2) < (labelx + labelw / 2)) {
+        if ((y + height / 2) < (labely + labelh / 2)){ // ラベルの左上
+            
+            float lx = x + width / 2;
+            float ly = y + height / 2;
+            float lw = (labelx + labelw / 2) - (x + width / 2);
+            float lh = (labely + labelh / 2) - (y + height / 2);
+            
+            dt.frame = CGRectMake(lx, ly, lw, lh);
+            
+            [MMtmp setObject:[NSNumber numberWithFloat:lx] forKey:@"linex"];
+            [MMtmp setObject:[NSNumber numberWithFloat:ly] forKey:@"liney"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lw] forKey:@"linew"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lh] forKey:@"lineh"];
+        }
+        else{ // ラベルの左下
+            
+            float lx = x + width / 2;
+            float ly = labely + labelh / 2;
+            float lw = (labelx + labelw / 2) - (x + width / 2);
+            float lh = (y + height / 2) - (labely + labelh / 2);
+            
+            dt.frame = CGRectMake(lx, ly, lw, lh);
+            
+            [MMtmp setObject:[NSNumber numberWithFloat:lx] forKey:@"linex"];
+            [MMtmp setObject:[NSNumber numberWithFloat:ly] forKey:@"liney"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lw] forKey:@"linew"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lh] forKey:@"lineh"];
+        }
+    }
+    else{
+        if ((y + height / 2) < (labely + labelh / 2)){ // ラベルの右上
+            
+            float lx = labelx + labelw / 2;
+            float ly = y + height / 2;
+            float lw = (x + width / 2) - (labelx + labelw / 2);
+            float lh = (labely + labelh / 2) - (y + height / 2);
+            
+            dt.frame = CGRectMake(lx, ly, lw, lh);
+            
+            [MMtmp setObject:[NSNumber numberWithFloat:lx] forKey:@"linex"];
+            [MMtmp setObject:[NSNumber numberWithFloat:ly] forKey:@"liney"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lw] forKey:@"linew"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lh] forKey:@"lineh"];
+        }
+        else{ // ラベルの右下
+            
+            float lx = labelx + labelw / 2;
+            float ly = labely + labelh / 2;
+            float lw = (x + width / 2) - (labelx + labelw / 2);
+            float lh = (y + height / 2) - (labely + labelh / 2);
+            
+            dt.frame = CGRectMake(lx, ly, lw, lh);
+            
+            [MMtmp setObject:[NSNumber numberWithFloat:lx] forKey:@"linex"];
+            [MMtmp setObject:[NSNumber numberWithFloat:ly] forKey:@"liney"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lw] forKey:@"linew"];
+            [MMtmp setObject:[NSNumber numberWithFloat:lh] forKey:@"lineh"];
+        }
+    }
+    
+    //MMtmpを保存
+    [Atmp replaceObjectAtIndex:savedlistId-10001 withObject:MMtmp];
+    [Mtmp setObject:Atmp forKey:@"List"];
+    [_LabelArray replaceObjectAtIndex:savedId-1 withObject:Mtmp];
+    
+    [self saveToUserDefaults];
+    NSLog(@"%@", _LabelArray);
+    return dt;
+}
+
 // 電話等緊急時の時
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event{
     [self touchesEnded:touches withEvent:event];
@@ -958,4 +1424,5 @@
 }
 
 @end
+//エラー1:いくつかラベルを作りどれかひとつを削除し、その後ラベルを動かすと線が残る。全削除でも線とラベルは消えず
 

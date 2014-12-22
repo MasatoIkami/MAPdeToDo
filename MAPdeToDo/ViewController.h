@@ -25,9 +25,6 @@
     UIDatePicker *_listDate;
     UITextView *_listDetail;
     
-    UILabel *_nlabel;
-    UILabel *_label;
-    
     BOOL _Flag;
     
 }

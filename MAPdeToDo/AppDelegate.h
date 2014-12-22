@@ -12,6 +12,8 @@
 
 @property (strong, nonatomic) UIWindow *window;
 
+@property (nonatomic, assign)float basicX;
+@property (nonatomic, assign)float basicY;
 
 @end
 

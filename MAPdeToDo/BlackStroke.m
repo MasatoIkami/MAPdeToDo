@@ -7,6 +7,7 @@
 //
 
 #import "BlackStroke.h"
+#import "AppDelegate.h"
 
 @implementation BlackStroke
 
@@ -28,7 +29,6 @@
     float y = self.frame.origin.y;
     float w = self.frame.size.width;
     float h = self.frame.size.height;
-    // NSLog(@"LINESIZE: %f, %f, %f, %f", x, y, w, h);
     
     UIBezierPath *context = [UIBezierPath bezierPath];
     
@@ -39,8 +39,11 @@
     CGFloat dashPattern[2] = {5.0f, 2.0f};
     [context setLineDash:dashPattern count:2 phase:0];
     
-    if ( x < 160.0 ){
-        if ( y < 284 ) {
+    // グローバル変数のカプセル化
+    AppDelegate *basic = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    
+    if ( x < basic.basicX ){
+        if ( y < basic.basicY ) {
             
             [context moveToPoint:CGPointMake(0,0)];
             [context addLineToPoint:CGPointMake(w, h)];
@@ -52,7 +55,7 @@
         }
     }
     else{
-        if (y < 284) {
+        if (y < basic.basicY ) {
             [context moveToPoint:CGPointMake(w,0)];
             [context addLineToPoint:CGPointMake(0, h)];
         }else{
